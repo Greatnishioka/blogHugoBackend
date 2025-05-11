@@ -17,7 +17,7 @@ class RegisterArticlesResponder extends BaseApiResponder{
         return new BaseApiResource([
             'status' => $status,
             'message' => $message,
-            'data' => [],
+            'data' => $data,
         ]);
     }
 

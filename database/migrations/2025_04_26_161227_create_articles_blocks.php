@@ -13,12 +13,14 @@ return new class extends Migration
     {
         Schema::create('articles_blocks', function (Blueprint $table) {
             $table->id();
+            $table->uuid('block_uuid')->unique()->comment('このブロックのUUID。ブロックのidを露出させたくないため、こちらを使用する。');
             $table->foreignId('article_id')->constrained('articles')->onDelete('cascade');
-            $table->unsignedInteger('parent_block_id')->nullable()->comment('親ブロックのID。ulタグやaタグなどの構造化が避けられないタグに対して用いる。特に親要素がない場合はnull');
+            $table->string('parent_block_uuid')->nullable()->comment('親ブロックのUUID。ulタグやaタグなどの構造化が避けられないタグに対して用いる。特に親要素がない場合はnull');
+            $table->unsignedInteger('order_from_parent_block')->nullable()->default(null)->comment('このブロックの順番。nullは未設定。');
             $table->enum(
                 'block_type', 
                 [
-                    'headding1', 'headding2', 'headding3', 'headding4', 'headding5','headding6'
+                    'heading1', 'heading2', 'heading3', 'heading4', 'heading5','heading6'
                     ]
                     )->comment('このブロックの種類。多分種類増える');
             $table->text('content')->nullable()->comment('このブロックのコンテンツ。imgタグなど限定的な場合にのみこのcontentが空になる。');

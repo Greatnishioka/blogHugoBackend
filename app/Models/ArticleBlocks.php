@@ -14,8 +14,9 @@ class ArticleBlocks extends Model
     protected $keyType = 'int';
 
     protected $fillable = [
+        'block_uuid',
         'article_id',
-        'parent_block_id',
+        'parent_block_uuid',
         'block_type',
         'content',
         'style',

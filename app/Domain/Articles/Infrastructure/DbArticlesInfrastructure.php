@@ -38,11 +38,13 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
             foreach ($blocks as $block) {
                 $savedBlock = $this->articleBlocks->create([
+                    'block_uuid' => $block['blockUuid'],
                     'article_id' => $savedArticlesAttributes['id'],
                     'block_type' => $block['blockType'],
                     'content' => $block['content'],
                     // 以下は各タグごとにオプションで必要になる項目
-                    'parent_block_id' => $block['parentBlockId'] ?? null,
+                    'parent_block_uuid' => $block['parentBlockUuid'] ?? null,
+                    'order_from_parent_block' => $block['orderFromParentBlock'] ?? null,
                     'style' => $block['blockStyle'] ?? null,
                     'url' => $block['blockUrl'] ?? null,
                     'language' => $block['blockLanguage'] ?? null,
@@ -52,7 +54,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
                 $savedBlocks[] = new ArticlesBlockEntity(
                     $savedBlockAttributes['id'],
                     $savedBlockAttributes['article_id'],
-                    $savedBlockAttributes['parent_block_id'] ?? null,
+                    $savedBlockAttributes['parent_block_uuid'] ?? null,
                     $savedBlockAttributes['block_type'],
                     $savedBlockAttributes['content'],
                     $savedBlockAttributes['style'] ?? null,
@@ -108,7 +110,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
                     return new ArticlesBlockEntity(
                         $blockAttributes['id'],
                         $blockAttributes['article_id'],
-                        $blockAttributes['parent_block_id'] ?? null,
+                        $blockAttributes['parent_block_uuid'] ?? null,
                         $blockAttributes['block_type'],
                         $blockAttributes['content'],
                         $blockAttributes['style'] ?? null,

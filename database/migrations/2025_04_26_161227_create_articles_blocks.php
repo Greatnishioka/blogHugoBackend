@@ -21,8 +21,7 @@ return new class extends Migration
                 'block_type', 
                 [
                     'heading1', 'heading2', 'heading3', 'heading4', 'heading5','heading6'
-                    ]
-                    )->comment('このブロックの種類。多分種類増える');
+                    ])->comment('このブロックの種類。多分種類増える');
             $table->text('content')->nullable()->comment('このブロックのコンテンツ。imgタグなど限定的な場合にのみこのcontentが空になる。');
             $table->text('style')->nullable()->comment('基本空欄にしたい。もし手動でスタイルをいじる場合は、ここにCSSを入れる。');
             $table->string('url')->nullable()->comment('このブロックの中で使うURL。画像や動画、遷移先などのURL');

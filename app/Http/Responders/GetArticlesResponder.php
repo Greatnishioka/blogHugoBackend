@@ -25,7 +25,7 @@ class GetArticlesResponder extends BaseApiResponder{
                     return [
                         'id' => $block->getId(),
                         'articleId' => $block->getArticleId(),
-                        'parentBlockId' => $block->getParentBlockId(),
+                        'parentBlockId' => $block->getParentBlockUuid(),
                         'blockType' => $block->getBlockType(),
                         'content' => $block->getContent(),
                         'style' => $block->getStyle(),

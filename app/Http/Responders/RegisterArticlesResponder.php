@@ -13,11 +13,32 @@ class RegisterArticlesResponder extends BaseApiResponder{
     }
     public function success(array $data = [], string $message = 'Success', int $status = 200): BaseApiResource
     {
+        $formattedData = array_map(function ($article) {
+            return [
+                'id' => $article->getId(),
+                'title' => $article->getTitle(),
+                'author' => $article->getAuthor(),
+                'authorId' => $article->getAuthorId(),
+                'viewCount' => $article->getViewCount(),
+                'blocks' => array_map(function ($block) {
+                    return [
+                        'id' => $block->getId(),
+                        'articleId' => $block->getArticleId(),
+                        'parentBlockId' => $block->getParentBlockUuid(),
+                        'blockType' => $block->getBlockType(),
+                        'content' => $block->getContent(),
+                        'style' => $block->getStyle(),
+                        'url' => $block->getUrl(),
+                        'language' => $block->getLanguage(),
+                    ];
+                }, $article->getBlocks() ?? []),
+            ];
+        }, $data);
 
         return new BaseApiResource([
             'status' => $status,
             'message' => $message,
-            'data' => $data,
+            'data' => $formattedData,
         ]);
     }
 

@@ -8,9 +8,6 @@ use App\Functions\functions;
 
 class GetArticlesResponder extends BaseApiResponder{
     
-    public function __construct()
-    {
-    }
     public function success(array $data = [], string $message = 'Success', int $status = 200): BaseApiResource
     {
 

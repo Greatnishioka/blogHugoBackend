@@ -2,31 +2,29 @@
 
 namespace App\Domain\Articles\Entity;
 
+use App\Domain\Articles\Entity\Blocks\ArticleBlockInfoEntity;
+use App\Domain\Articles\Entity\Tags\ArticleTagsEntity;
 use JsonSerializable;
 
 class ArticlesEntity implements JsonSerializable
 {
     public function __construct(
-        private ?int $id,
-        private ?string $title,
-        private ?string $author,
-        private ?int $authorId,
-        private ?string $viewCount,
-        /*
-         * @param ArticlesBlockEntity[] $blocks
-         */
-        private ?Array $blocks,
+        private ?int $id = null,
+        private ?string $articleId = null,
+        private ?ArticleDetailEntity $detail = null,
+        private ?ArticleTagsEntity $tags = null,
+        private ?ArticleBlockInfoEntity $blocks = null,
+        private ?ArticleOptionsEntity $options = null,
     ) {}
 
     public function jsonSerialize(): array
     {
         return [
             'id' => $this->id,
-            'title' => $this->title,
-            'author' => $this->author,
-            'author_id' => $this->authorId,
-            'view_count' => $this->viewCount,
+            'detail' => $this->detail ? $this->detail->jsonSerialize() : null,
             'blocks' => $this->blocks,
+            'tags' => $this->tags,
+            'options' => $this->options ? $this->options->jsonSerialize() : null,
         ];
     }
 
@@ -38,44 +36,48 @@ class ArticlesEntity implements JsonSerializable
     {
         $this->id = $id;
     }
-    public function getTitle(): ?string
+    public function getArticleId(): ?string
     {
-        return $this->title;
+        return $this->articleId;
     }
-    public function setTitle(?string $title): void
+    public function setArticleId(?string $articleId): void
     {
-        $this->title = $title;
-    }
-    public function getAuthor(): ?string
-    {
-        return $this->author;
-    }
-    public function setAuthor(?string $author): void
-    {
-        $this->author = $author;
-    }
-    public function getAuthorId(): ?int
-    {
-        return $this->authorId;
-    }
-    public function setAuthorId(?int $authorId): void
-    {
-        $this->authorId = $authorId;
-    }
-    public function getViewCount(): ?int
-    {
-        return $this->viewCount;
+        $this->articleId = $articleId;
     }
     public function setViewCount(?int $viewCount): void
     {
         $this->viewCount = $viewCount;
     }
-    public function getBlocks(): ?array
+    public function getBlocks(): ?ArticleBlockInfoEntity
     {
         return $this->blocks;
     }
-    public function setBlocks(?array $blocks): void
+    public function getDetail ():ArticleDetailEntity
+    {
+        return $this->detail;
+    }
+    public function setDetail(?ArticleDetailEntity $detail): void
+    {
+        $this->detail = $detail;
+    }
+    public function setBlocks(?ArticleBlockInfoEntity $blocks): void
     {
         $this->blocks = $blocks;
+    }
+    public function getTags(): ?ArticleTagsEntity
+    {
+        return $this->tags;
+    }
+    public function setTags(?ArticleTagsEntity $tags): void
+    {
+        $this->tags = $tags;
+    }
+    public function getOptions(): ?ArticleOptionsEntity
+    {
+        return $this->options;
+    }
+    public function setOptions(?ArticleOptionsEntity $options): void
+    {
+        $this->options = $options;
     }
 }

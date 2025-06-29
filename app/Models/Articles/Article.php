@@ -1,5 +1,5 @@
 <?php
-namespace App\Models;
+namespace App\Models\Articles;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,9 +14,6 @@ class Article extends Model
     protected $keyType = 'int';
 
     protected $fillable = [
-        'title',
-        'author',
-        'author_id',
-        'view_count',
+        'article_id',
     ];
 }

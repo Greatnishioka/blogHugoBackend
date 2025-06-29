@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('parent_block_uuid')->nullable()->comment('親ブロックのUUID。ulタグやaタグなどの構造化が避けられないタグに対して用いる。特に親要素がない場合はnull');
             $table->unsignedInteger('order_from_parent_block')->nullable()->default(null)->comment('このブロックの順番。nullは未設定。');
             $table->enum(
-                'block_type', 
+                'block_type',
                 [
                     'heading1', 'heading2', 'heading3', 'heading4', 'heading5','heading6'
                     ])->comment('このブロックの種類。多分種類増える');

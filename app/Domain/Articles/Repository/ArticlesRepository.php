@@ -2,7 +2,7 @@
 
 namespace App\Domain\Articles\Repository;
 use App\Domain\Articles\Entity\ArticlesEntity;
-use App\Domain\Articles\Entity\ImagesEntity;
+use App\Domain\Articles\Entity\Images\ImagesEntity;
 use Illuminate\Http\Request;
 
 interface ArticlesRepository {

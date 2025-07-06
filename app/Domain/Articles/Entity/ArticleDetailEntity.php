@@ -4,6 +4,8 @@ namespace App\Domain\Articles\Entity;
 
 use JsonSerializable;
 
+use App\Domain\Articles\Entity\Images\ImageUrlEntity;
+
 class ArticleDetailEntity implements JsonSerializable
 {
     public function __construct(

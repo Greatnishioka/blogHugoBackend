@@ -8,7 +8,9 @@ class ArticleOptionsEntity implements JsonSerializable
 {
     public function __construct(
         private ?string $articleId = null,
-        private ?string $isPrivate = null,
+        private ?string $optionId = null,
+        private ?bool $optionValue = null
+
     ) {
     }
 
@@ -16,7 +18,8 @@ class ArticleOptionsEntity implements JsonSerializable
     {
         return [
             'article_id' => $this->articleId,
-            'isPrivate' => $this->isPrivate,
+            'option_id' => $this->optionId,
+            'option_value' => $this->optionValue,
         ];
     }
     public function getArticleId(): ?string
@@ -27,14 +30,20 @@ class ArticleOptionsEntity implements JsonSerializable
     {
         $this->articleId = $articleId;
     }
-
-    public function getIsPrivate(): ?string
+    public function getOptionId(): ?string
     {
-        return $this->isPrivate;
+        return $this->optionId;
     }
-    public function setIsPrivate(?string $isPrivate): void
+    public function setOptionId(?string $optionId): void
     {
-        $this->isPrivate = $isPrivate;
+        $this->optionId = $optionId;
     }
-
+    public function getOptionValue(): ?bool
+    {
+        return $this->optionValue;
+    }
+    public function setOptionValue(?bool $optionValue): void
+    {
+        $this->optionValue = $optionValue;
+    }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Articles\Entity;
+namespace App\Domain\Articles\Entity\Images;
 
 use JsonSerializable;
 

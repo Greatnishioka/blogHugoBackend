@@ -15,12 +15,14 @@ use App\Domain\Articles\Entity\ArticlesEntity;
 use App\Domain\Articles\Entity\ArticleOptionsEntity;
 use App\Domain\Articles\Entity\ArticleDetailEntity;
 use App\Domain\Articles\Entity\ArticleStatusEntity;
-use App\Domain\Articles\Entity\Tags\ArticleTagsEntity;
-use App\Domain\Articles\Entity\ArticlesBlockEntity;
-use App\Domain\Articles\Entity\Blocks\ArticleBlockInfoEntity;
-use App\Domain\Articles\Entity\ImagesEntity;
-use App\Domain\Articles\Entity\ImageUrlEntity;
+use App\Domain\Articles\Entity\ArticleBlockEntity;
+use App\Domain\Articles\Entity\ArticleTagsEntity;
+use App\Domain\Articles\Entity\Blocks\BlockEntity;
+use App\Domain\Articles\Entity\Images\ImagesEntity;
+use App\Domain\Articles\Entity\Images\ImageUrlEntity;
+// Repositories
 use App\Domain\Articles\Repository\ArticlesRepository;
+// Others
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -62,38 +64,37 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
             // 記事の大枠の作成
             // ここで作成した記事のIDを元に、他の情報を紐づけていく
-            $savedArticles = $this->resisterMainArticle();
+            $savedArticles = $this->registerMainArticle();
 
             // 記事のブロックの作成
-            $savedBlocks = $this->resisterBlockArticle(
+            $savedBlocks = $this->registerBlockArticle(
                 $request->input('blocks'),
                 $savedArticles['id']
             );
 
             // 記事の詳細の作成
-            $savedDetail = $this->resisterDetailArticle(
+            $savedDetail = $this->registerDetailArticle(
                 $request->input('detail'),
                 $savedArticles['id']
             );
 
-            // 記事のオプションの作成
-            $savedOption = $this->resisterOptionArticle(
-                $request->input('options'),
-                $savedArticles['id']
-            );
-
             // 記事のステータスの作成
-            $savedStatus = $this->resisterStatusArticle(
+            $savedStatus = $this->registerStatusArticle(
                 $request->input('status'),
                 $savedArticles['id']
             );
 
             // 記事のタグの作成
-            $savedTags = $this->resisterTagsArticle(
+            $savedTags = $this->registerTagsArticle(
                 $request->input('tags'),
                 $savedArticles['id']
             );
 
+            // 記事のオプションの作成(公開・非公開など)
+            $savedOptions = $this->registerOptions(
+                $request->input('options'),
+                $savedArticles['id']
+            );
 
             return new ArticlesEntity(
                 $savedArticles['id'],
@@ -111,23 +112,14 @@ class DbArticlesInfrastructure implements ArticlesRepository
                 ),
                 new ArticleTagsEntity(
                     $savedArticles['id'],
-                    [
-                        $savedTags[0],
-                        $savedTags[1],
-                        $savedTags[2],
-                        $savedTags[3],
-                        $savedTags[4]
-                    ]
+                    $savedTags
                 ),
-                new ArticleBlockInfoEntity(
+                new ArticleBlockEntity(
                     $savedArticles['id'],
                     $savedBlocks
 
                 ),
-                new ArticleOptionsEntity(
-                    $savedArticles['id'],
-                    null, // オプションは記事登録時にはまだないのでnull
-                ),
+                $savedOptions,
             );
         } catch (NotFoundHttpException $e) {
             throw new NotFoundHttpException($e->getMessage());
@@ -181,15 +173,12 @@ class DbArticlesInfrastructure implements ArticlesRepository
                         null
                     ]
                 ),
-                new ArticleBlockInfoEntity(
+                new ArticleBlockEntity(
                     $articleAttributes['id'],
                     null
 
                 ),
-                new ArticleOptionsEntity(
-                    $articleAttributes['id'],
-                    null,
-                ),
+                [],
             );
 
 
@@ -208,8 +197,8 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
             // このpre_id付きのディレクトリは、画像の保存先を一時的に指定するためのもの
             // これが残ってる場合はバッチで削除するようにしたいね
-            $preNewDirectory = now()->format('Ymd-His') . '_pre-id-' . Str::uuid();
-            $newDirectory = public_path('articles/' . $preNewDirectory);
+            $preNewDirectoryName = now()->format('Ymd-His') . '_pre-id-' . Str::uuid();
+            $newDirectory = public_path('articles/' . $preNewDirectoryName);
             $saveDestinationList = [];
             $host = request()->getSchemeAndHttpHost();
 
@@ -220,12 +209,10 @@ class DbArticlesInfrastructure implements ArticlesRepository
             $files = $request->file('file');
             $topImage = $request->file('topImage');
 
-
             // 単一ファイルの場合は配列に変換
             if (!is_array($files)) {
                 $files = [$files];
             }
-
 
             // リクエスト内にトップイメージが存在する場合は、配列の先頭に追加
             // トップイメージは特別に扱いたい
@@ -241,13 +228,13 @@ class DbArticlesInfrastructure implements ArticlesRepository
                 $img = $imageManager->read($image->getRealPath());
 
                 if ($topImage && $index === 0) {
-                    $saveDir = public_path('articles/' . $preNewDirectory . '/topImage');
+                    $saveDir = public_path('articles/' . $preNewDirectoryName . '/topImage');
                     if (!file_exists($saveDir)) {
                         mkdir($saveDir, 0777, true);
                     }
                     $fileName = 'topImage.webp';
                 } else {
-                    $saveDir = public_path('articles/' . $preNewDirectory . '/articleImages');
+                    $saveDir = public_path('articles/' . $preNewDirectoryName . '/articleImages');
                     if (!file_exists($saveDir)) {
                         mkdir($saveDir, 0777, true);
                     }
@@ -258,7 +245,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
                 $imageUrl = new ImageUrlEntity(
                     null,
-                    $host . '/' . $preNewDirectory . ($topImage && $index === 0 ? '/topImage' : '/articleImages') . '/' . $fileName,
+                    $host . '/' . $preNewDirectoryName . ($topImage && $index === 0 ? '/topImage' : '/articleImages') . '/' . $fileName,
                     null,
                     null,
                 );
@@ -274,7 +261,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
     // 以下は便利に使えるメソッド
 
-    public function resisterMainArticle(): array
+    public function registerMainArticle(): array
     {
         // 記事の登録
         $savedArticles = $this->article->create([
@@ -284,7 +271,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
         return $savedArticles->getAttributes();
     }
 
-    public function resisterBlockArticle($blocks, $id): array
+    public function registerBlockArticle($blocks, $id): array
     {
 
         $savedBlocks = [];
@@ -302,9 +289,10 @@ class DbArticlesInfrastructure implements ArticlesRepository
                 'url' => $block['blockUrl'] ?? null,
                 'language' => $block['blockLanguage'] ?? null,
             ]);
+
             $savedBlockAttributes = $savedBlock->getAttributes();
 
-            $savedBlocks[] = new ArticlesBlockEntity(
+            $savedBlocks[] = new BlockEntity(
                 $savedBlockAttributes['id'],
                 $savedBlockAttributes['article_id'],
                 $savedBlockAttributes['parent_block_uuid'] ?? null,
@@ -318,8 +306,9 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
         return $savedBlocks;
     }
-    public function resisterDetailArticle($detail, $id): array
+    private function registerDetailArticle($detail, $id): array
     {
+
         $savedDetail = $this->articleDetail->create([
             'article_id' => $id,
             'title' => $detail['title'],
@@ -329,27 +318,23 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
         return $savedDetail->getAttributes();
     }
-
-    public function resisterOptionArticle($option, $id): array
+    private function registerStatusArticle($status, $id): array
     {
-        $savedOption = $this->articleOption->create([
-            'article_id' => $id,
-            'is_private' => $option['isPrivate'] ?? false,
-        ]);
 
-        return $savedOption->getAttributes();
-    }
-    public function resisterStatusArticle($status, $id): array
-    {
-        $savedStatus = $this->articleOption->create([
-            'article_id' => $id,
-            'view_count' => $status['viewCount'] ?? 0,
-        ]);
+        $savedStatuses = [];
 
-        return $savedStatus->getAttributes();
+        foreach ($status as $st) {
+            $savedStatuses[] = $this->articleStatus->create([
+                'article_id' => $id,
+                'option_id' => $st['optionId'],
+                'option_value' => $st['optionValue'],
+            ]);
+        }
+
+        return $savedStatuses;
     }
 
-    public function resisterTagsArticle($tag, $id): array
+    private function registerTagsArticle($tag, $id): array
     {
 
         $tag1 = $this->tag->firstOrCreate(['content' => $tag['tag1']]);
@@ -365,5 +350,26 @@ class DbArticlesInfrastructure implements ArticlesRepository
             new ArticleTagsEntity($id, $tag4->getAttributes()),
             new ArticleTagsEntity($id, $tag5->getAttributes()),
         ];
+    }
+
+    private function registerOptions(array $option, int $id): array
+    {
+
+        $savedOptions = [];
+
+        foreach ($option as $op) {
+            $savedOption = $this->articleOption->create([
+                'article_id' => $id,
+                'option_id' => $op['optionId'],
+                'option_value' => $op['optionValue'],
+            ]);
+
+            $savedOptions[] = new ArticleOptionsEntity(
+                $savedOption->getAttributes()['article_id'],
+                $savedOption->getAttributes()['option_id'],
+                $savedOption->getAttributes()['option_value']
+            );
+        }
+        return $savedOptions;
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models\Articles;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,9 +13,10 @@ class ArticleOption extends Model
     protected $primaryKey = 'id';
     public $incrementing = true;
     protected $keyType = 'int';
-    
+
     protected $fillable = [
         'article_id',
-        'is_private',
+        'option_id',
+        'option_value',
     ];
 }

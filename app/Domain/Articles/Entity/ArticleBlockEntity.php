@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Domain\Articles\Entity\Blocks;
+namespace App\Domain\Articles\Entity;
 
 use JsonSerializable;
 
-class ArticleBlockInfoEntity implements JsonSerializable
+class ArticleBlockEntity implements JsonSerializable
 {
     public function __construct(
         private ?int $articleId,

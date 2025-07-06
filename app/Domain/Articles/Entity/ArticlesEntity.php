@@ -2,8 +2,6 @@
 
 namespace App\Domain\Articles\Entity;
 
-use App\Domain\Articles\Entity\Blocks\ArticleBlockInfoEntity;
-use App\Domain\Articles\Entity\Tags\ArticleTagsEntity;
 use JsonSerializable;
 
 class ArticlesEntity implements JsonSerializable
@@ -13,8 +11,8 @@ class ArticlesEntity implements JsonSerializable
         private ?string $articleId = null,
         private ?ArticleDetailEntity $detail = null,
         private ?ArticleTagsEntity $tags = null,
-        private ?ArticleBlockInfoEntity $blocks = null,
-        private ?ArticleOptionsEntity $options = null,
+        private ?ArticleBlockEntity $blocks = null,
+        private ?array $options = null,
     ) {}
 
     public function jsonSerialize(): array
@@ -24,7 +22,7 @@ class ArticlesEntity implements JsonSerializable
             'detail' => $this->detail ? $this->detail->jsonSerialize() : null,
             'blocks' => $this->blocks,
             'tags' => $this->tags,
-            'options' => $this->options ? $this->options->jsonSerialize() : null,
+            'options' => $this->options,
         ];
     }
 
@@ -48,7 +46,7 @@ class ArticlesEntity implements JsonSerializable
     {
         $this->viewCount = $viewCount;
     }
-    public function getBlocks(): ?ArticleBlockInfoEntity
+    public function getBlocks(): ?ArticleBlockEntity
     {
         return $this->blocks;
     }
@@ -60,7 +58,7 @@ class ArticlesEntity implements JsonSerializable
     {
         $this->detail = $detail;
     }
-    public function setBlocks(?ArticleBlockInfoEntity $blocks): void
+    public function setBlocks(?ArticleBlockEntity $blocks): void
     {
         $this->blocks = $blocks;
     }
@@ -72,11 +70,11 @@ class ArticlesEntity implements JsonSerializable
     {
         $this->tags = $tags;
     }
-    public function getOptions(): ?ArticleOptionsEntity
+    public function getOptions(): ?array
     {
         return $this->options;
     }
-    public function setOptions(?ArticleOptionsEntity $options): void
+    public function setOptions(?array $options): void
     {
         $this->options = $options;
     }

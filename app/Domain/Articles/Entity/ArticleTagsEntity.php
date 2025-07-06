@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Articles\Entity\Tags;
+namespace App\Domain\Articles\Entity;
 
 use JsonSerializable;
 

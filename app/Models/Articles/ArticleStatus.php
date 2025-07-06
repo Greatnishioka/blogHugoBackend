@@ -15,6 +15,7 @@ class ArticleStatus extends Model
     
     protected $fillable = [
         'article_id',
-        'view_count',
+        'status_id',
+        'status_value',
     ];
 }

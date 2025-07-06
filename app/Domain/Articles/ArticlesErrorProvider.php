@@ -14,8 +14,6 @@ class ArticlesErrorProvider extends ServiceProvider
         $this->app->bind(
             \App\Domain\Articles\Repository\ArticlesRepository::class,
             \App\Domain\Articles\Infrastructure\DbArticlesInfrastructure::class,
-            //\App\Domain\AppInfo\Infrastructure\DemoDbGetVersionInfrastructure::class,
-
         );
     }
 

@@ -8,9 +8,6 @@ use App\Functions\functions;
 
 class GetArticlesResponder extends BaseApiResponder{
     
-    public function __construct()
-    {
-    }
     public function success(array $data = [], string $message = 'Success', int $status = 200): BaseApiResource
     {
 
@@ -25,7 +22,7 @@ class GetArticlesResponder extends BaseApiResponder{
                     return [
                         'id' => $block->getId(),
                         'articleId' => $block->getArticleId(),
-                        'parentBlockId' => $block->getParentBlockId(),
+                        'parentBlockId' => $block->getParentBlockUuid(),
                         'blockType' => $block->getBlockType(),
                         'content' => $block->getContent(),
                         'style' => $block->getStyle(),

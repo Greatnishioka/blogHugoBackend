@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('articles_blocks', function (Blueprint $table) {
             $table->id();
+            $table->uuid('block_uuid')->unique()->comment('このブロックのUUID。ブロックのidを露出させたくないため、こちらを使用する。');
             $table->foreignId('article_id')->constrained('articles')->onDelete('cascade');
-            $table->unsignedInteger('parent_block_id')->nullable()->comment('親ブロックのID。ulタグやaタグなどの構造化が避けられないタグに対して用いる。特に親要素がない場合はnull');
+            $table->string('parent_block_uuid')->nullable()->comment('親ブロックのUUID。ulタグやaタグなどの構造化が避けられないタグに対して用いる。特に親要素がない場合はnull');
+            $table->unsignedInteger('order_from_parent_block')->nullable()->default(null)->comment('このブロックの順番。nullは未設定。');
             $table->enum(
-                'block_type', 
+                'block_type',
                 [
-                    'headding1', 'headding2', 'headding3', 'headding4', 'headding5','headding6'
-                    ]
-                    )->comment('このブロックの種類。多分種類増える');
+                    'heading1', 'heading2', 'heading3', 'heading4', 'heading5','heading6'
+                    ])->comment('このブロックの種類。多分種類増える');
             $table->text('content')->nullable()->comment('このブロックのコンテンツ。imgタグなど限定的な場合にのみこのcontentが空になる。');
             $table->text('style')->nullable()->comment('基本空欄にしたい。もし手動でスタイルをいじる場合は、ここにCSSを入れる。');
             $table->string('url')->nullable()->comment('このブロックの中で使うURL。画像や動画、遷移先などのURL');

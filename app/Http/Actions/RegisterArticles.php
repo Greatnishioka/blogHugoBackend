@@ -23,6 +23,7 @@ class RegisterArticles {
     public function handle(RegisterArticlesRequest $request): BaseApiResource
     {
         try {
+            
             $entities = $this->useCase->__invoke($request);
 
             return $this->responder->success(

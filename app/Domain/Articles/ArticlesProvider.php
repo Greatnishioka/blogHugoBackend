@@ -4,7 +4,7 @@ namespace App\Domain\Articles;
 
 use Illuminate\Support\ServiceProvider;
 
-class ArticlesErrorProvider extends ServiceProvider
+class ArticlesProvider extends ServiceProvider
 {
     /**
      * Register services.

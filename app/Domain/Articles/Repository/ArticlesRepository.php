@@ -10,5 +10,6 @@ interface ArticlesRepository {
     public function registerArticles(Request $request):ArticlesEntity;
     public function getArticles(Request $request): ArticlesEntity;
     public function imageSave(Request $request): ImagesEntity;
+    public function getInitProject(Request $request): ArticlesEntity;
 
 }

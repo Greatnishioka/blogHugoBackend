@@ -1,20 +1,20 @@
 <?php
 
-namespace App\Http\Actions;
+namespace App\Http\Actions\Articles\Project;
 
-use App\Domain\Articles\UseCase\RegisterArticlesUseCase;
+use App\Domain\Articles\UseCase\GetInitProjectUseCase;
 
 use App\Exceptions\BaseException;
 use App\Http\Requests\RegisterArticlesRequest;
 use App\Http\Resources\BaseApiResource;
-use App\Http\Responders\RegisterArticlesResponder;
+use App\Http\Responders\Articles\Project\GetInitProjectResponder;
 use RuntimeException;
 
-class RegisterArticles {
-    private RegisterArticlesUseCase $useCase;
-    private RegisterArticlesResponder $responder;
+class GetInitProject {
+    private GetInitProjectUseCase $useCase;
+    private GetInitProjectResponder $responder;
 
-    public function __construct(RegisterArticlesUseCase $useCase, RegisterArticlesResponder $responder)
+    public function __construct(GetInitProjectUseCase $useCase, GetInitProjectResponder $responder)
     {
         $this->useCase = $useCase;
         $this->responder = $responder;

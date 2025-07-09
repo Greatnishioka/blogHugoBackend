@@ -9,6 +9,8 @@ use App\Models\Articles\ArticleDetail;
 use App\Models\Articles\ArticleOption;
 use App\Models\Articles\ArticleStatus;
 use App\Models\Articles\ArticleTag;
+use App\Models\Status\Status;
+use App\Models\Options\Option;
 use App\Models\Tags\Tag;
 // Entities
 use App\Domain\Articles\Entity\ArticlesEntity;
@@ -18,6 +20,8 @@ use App\Domain\Articles\Entity\ArticleStatusEntity;
 use App\Domain\Articles\Entity\ArticleBlockEntity;
 use App\Domain\Articles\Entity\ArticleTagsEntity;
 use App\Domain\Articles\Entity\Blocks\BlockEntity;
+use App\Domain\Articles\Entity\Status\StatusEntity;
+use App\Domain\Articles\Entity\Option\OptionEntity;
 use App\Domain\Articles\Entity\Images\ImagesEntity;
 use App\Domain\Articles\Entity\Images\ImageUrlEntity;
 // Repositories
@@ -38,6 +42,8 @@ class DbArticlesInfrastructure implements ArticlesRepository
     private ArticleStatus $articleStatus;
     private ArticleTag $articleTag;
     private Tag $tag;
+    private Status $status;
+    private Option $option;
 
     public function __construct(
         Article $article,
@@ -46,7 +52,10 @@ class DbArticlesInfrastructure implements ArticlesRepository
         ArticleOption $articleOption,
         ArticleStatus $articleStatus,
         ArticleTag $articleTag,
-        Tag $tag
+        Tag $tag,
+        Status $status,
+        Option $option
+
     ) {
         $this->article = $article;
         $this->articleBlocks = $articleBlocks;
@@ -55,6 +64,8 @@ class DbArticlesInfrastructure implements ArticlesRepository
         $this->articleStatus = $articleStatus;
         $this->articleTag = $articleTag;
         $this->tag = $tag;
+        $this->status = $status;
+        $this->option = $option;
     }
 
     #[\Override]
@@ -105,10 +116,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
                     $savedDetail['author'],
                     $savedDetail['author_id'],
                     null, // これちゃんとプログラムを組む
-                    new ArticleStatusEntity(
-                        $savedArticles['id'],
-                        $savedStatus['view_count']
-                    )
+                    $savedStatus
                 ),
                 new ArticleTagsEntity(
                     $savedArticles['id'],
@@ -158,24 +166,15 @@ class DbArticlesInfrastructure implements ArticlesRepository
                     null, // $savedDetail['author'],
                     null, // $savedDetail['author_id'],
                     null, // null, // これちゃんとプログラムを組む
-                    new ArticleStatusEntity(
-                        null,
-                        null
-                    )
+                    []
                 ),
                 new ArticleTagsEntity(
                     $articleAttributes['id'],
-                    [
-                        null,
-                        null,
-                        null,
-                        null,
-                        null
-                    ]
+                    []
                 ),
                 new ArticleBlockEntity(
                     $articleAttributes['id'],
-                    null
+                    []
 
                 ),
                 [],
@@ -259,6 +258,75 @@ class DbArticlesInfrastructure implements ArticlesRepository
         }
     }
 
+    #[\Override]
+    public function getInitProject(Request $request): ArticlesEntity
+    {
+        try {
+
+            $userId = $request->query('userId');
+
+            if (!$userId) {
+                throw new NotFoundHttpException('userIdが不正です。');
+            }
+            // 将来的にはuserの情報から撮ってきたデータを返すようにする
+            // でもまだユーザーの機能は実装していない(し、使うのが自分だけやから特に必要性も感じてない)ので、後回しにする🍣
+
+            // ステータスをリスト化する
+            $statuses = $this->status->all();
+            $statusEntities = [];
+            foreach ($statuses as $status) {
+                $statusAttributes = $status->getAttributes();
+                $statusEntities[] = new StatusEntity(
+                    $statusAttributes['id'],
+                    $statusAttributes['status_name'],
+                    $statusAttributes['description']
+                );
+            }
+
+            // オプションをリスト化する
+            $options = $this->option->all();
+            $optionEntities = [];
+            foreach ($options as $option) {
+                $optionAttributes = $option->getAttributes();
+                $optionEntities[] = new OptionEntity(
+                    $optionAttributes['id'],
+                    $optionAttributes['option_name'],
+                    $optionAttributes['description']
+                );
+            }
+
+            // リクエスト内容
+            return new ArticlesEntity(
+                null,
+                null,
+                new ArticleDetailEntity(
+                    null,
+                    null,
+                    "tester", // 将来的にはユーザーの情報を取得して表示する
+                    $userId,
+                    new ImageUrlEntity(
+                        "tester",
+                        "",
+                        "",
+                        ""
+                    ),
+                    $statusEntities
+                ),
+                new ArticleTagsEntity(
+                    null,
+                    []
+                ),
+                new ArticleBlockEntity(
+                    null,
+                    []
+                ),
+                $optionEntities
+            );
+        } catch (NotFoundHttpException $e) {
+            throw new NotFoundHttpException($e->getMessage());
+        }
+    }
+
     // 以下は便利に使えるメソッド
 
     public function registerMainArticle(): array
@@ -324,11 +392,19 @@ class DbArticlesInfrastructure implements ArticlesRepository
         $savedStatuses = [];
 
         foreach ($status as $st) {
-            $savedStatuses[] = $this->articleStatus->create([
+            $savedStatus = $this->articleStatus->create([
                 'article_id' => $id,
-                'option_id' => $st['optionId'],
-                'option_value' => $st['optionValue'],
+                'option_id' => $st['statusId'],
+                'option_value' => $st['statusValue'],
             ]);
+
+            $status = $savedStatus->getAttributes();
+
+            $savedStatuses[] = new ArticleStatusEntity(
+                $status['article_id'],
+                $status['option_id'],
+                $status['option_value']
+            );
         }
 
         return $savedStatuses;

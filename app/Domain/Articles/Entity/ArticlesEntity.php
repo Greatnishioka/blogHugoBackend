@@ -19,9 +19,10 @@ class ArticlesEntity implements JsonSerializable
     {
         return [
             'id' => $this->id,
+            'articleId' => $this->articleId,
             'detail' => $this->detail ? $this->detail->jsonSerialize() : null,
-            'blocks' => $this->blocks,
-            'tags' => $this->tags,
+            'tags' => $this->tags ? $this->tags->jsonSerialize() : null,
+            'blocks' => $this->blocks ? $this->blocks->jsonSerialize() : null,
             'options' => $this->options,
         ];
     }

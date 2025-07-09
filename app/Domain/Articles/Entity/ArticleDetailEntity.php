@@ -14,8 +14,12 @@ class ArticleDetailEntity implements JsonSerializable
         private ?string $author = null,
         private ?int $authorId = null,
         private ?ImageUrlEntity $topImage = null,
-        private ?ArticleStatusEntity $viewCount = null,
-    ) {}
+        /*
+         * @param ArticleStatusEntity[] $status
+         */
+        private ?array $status = null,
+    ) {
+    }
 
     public function jsonSerialize(): array
     {
@@ -24,8 +28,8 @@ class ArticleDetailEntity implements JsonSerializable
             'title' => $this->title,
             'author' => $this->author,
             'author_id' => $this->authorId,
-            'view_count' => $this->viewCount,
             'top_image' => $this->topImage ? $this->topImage->jsonSerialize() : null,
+            'status' => $this->status ? array_map(fn($s) => $s->jsonSerialize(), $this->status) : null,
         ];
     }
 
@@ -69,13 +73,13 @@ class ArticleDetailEntity implements JsonSerializable
     {
         $this->topImage = $topImage;
     }
-    public function getViewCount(): ?ArticleStatusEntity
+    public function getStatus(): ?array
     {
-        return $this->viewCount;
+        return $this->status;
     }
-    public function setViewCount(?ArticleStatusEntity $viewCount): void
+    public function setStatus(?array $status): void
     {
-        $this->viewCount = $viewCount;
+        $this->status = $status;
     }
-    
+
 }

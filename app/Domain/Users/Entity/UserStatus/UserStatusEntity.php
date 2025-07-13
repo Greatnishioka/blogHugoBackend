@@ -1,34 +1,33 @@
 <?php
 
-namespace App\Domain\Articles\Entity;
+namespace App\Domain\Users\Entity\UsersStatus;
 
 use JsonSerializable;
 
-class ArticleStatusEntity implements JsonSerializable
+class UserStatusEntity implements JsonSerializable
 {
     public function __construct(
-        private ?int $articleId = null,
+        private ?int $userId = null,
         private ?int $statusId = null,
         private ?bool $statusValue = null
 
-    ) {
-    }
+    ) {}
 
     public function jsonSerialize(): array
     {
         return [
-            'article_id' => $this->articleId,
+            'user_id' => $this->userId,
             'status_id' => $this->statusId,
             'status_value' => $this->statusValue,
         ];
     }
-    public function getArticleId(): ?int
+    public function getUserId(): ?int
     {
-        return $this->articleId;
+        return $this->userId;
     }
-    public function setArticleId(?int $articleId): void
+    public function setUserId(?int $userId): void
     {
-        $this->articleId = $articleId;
+        $this->userId = $userId;
     }
     public function getStatusId(): ?int
     {

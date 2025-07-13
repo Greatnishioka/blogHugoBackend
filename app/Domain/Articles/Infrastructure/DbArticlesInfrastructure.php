@@ -75,7 +75,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
             // 記事の大枠の作成
             // ここで作成した記事のIDを元に、他の情報を紐づけていく
-            $savedArticles = $this->registerMainArticle();
+            $savedArticles = $this->registerMainArticle($request->input('userId'));
 
             // 記事のブロックの作成
             $savedBlocks = $this->registerBlockArticle(
@@ -109,6 +109,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
             return new ArticlesEntity(
                 $savedArticles['id'],
+                $savedArticles['user_id'], // ユーザーIDは記事の作成者のID
                 $savedArticles['article_id'], // このidは閲覧者が記事へのアクセスの時にurlに露出する用
                 new ArticleDetailEntity(
                     $savedArticles['id'],
@@ -159,6 +160,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
             // ここはきちんとページの要素を組み立てる
             return new ArticlesEntity(
                 $articleAttributes['id'],
+                $articleAttributes['user_id'], // ユーザーIDは記事の作成者のID
                 $articleAttributes['article_id'],
                 new ArticleDetailEntity(
                     $articleAttributes['id'],
@@ -298,6 +300,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
             // リクエスト内容
             return new ArticlesEntity(
                 null,
+                $userId, // ユーザーIDは記事の作成者のID
                 null,
                 new ArticleDetailEntity(
                     null,
@@ -329,10 +332,11 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
     // 以下は便利に使えるメソッド
 
-    public function registerMainArticle(): array
+    public function registerMainArticle(int $userId): array
     {
         // 記事の登録
         $savedArticles = $this->article->create([
+            'user_id' => $userId, // ユーザーIDは記事の作成者のID
             'article_id' => (string) Str::uuid(),
         ]);
 

@@ -4,7 +4,7 @@ namespace App\Models\Articles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ArticleBlocks extends Model
+class ArticleBlock extends Model
 {
     use HasFactory;
 
@@ -19,8 +19,6 @@ class ArticleBlocks extends Model
         'parent_block_uuid',
         'block_type',
         'content',
-        'style',
-        'url',
-        'language',
+        'style'
     ];
 }

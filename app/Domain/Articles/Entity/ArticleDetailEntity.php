@@ -4,7 +4,7 @@ namespace App\Domain\Articles\Entity;
 
 use JsonSerializable;
 
-use App\Domain\Articles\Entity\Images\ImageUrlEntity;
+use App\Domain\Articles\Entity\Images\ImageEntity;
 
 class ArticleDetailEntity implements JsonSerializable
 {
@@ -13,7 +13,7 @@ class ArticleDetailEntity implements JsonSerializable
         private ?string $title = null,
         private ?string $author = null,
         private ?int $authorId = null,
-        private ?ImageUrlEntity $topImage = null,
+        private ?ImageEntity $topImage = null,
         /*
          * @param ArticleStatusEntity[] $status
          */
@@ -65,11 +65,11 @@ class ArticleDetailEntity implements JsonSerializable
     {
         $this->authorId = $authorId;
     }
-    public function getTopImage(): ?ImageUrlEntity
+    public function getTopImage(): ?ImageEntity
     {
         return $this->topImage;
     }
-    public function setTopImage(?ImageUrlEntity $topImage): void
+    public function setTopImage(?ImageEntity $topImage): void
     {
         $this->topImage = $topImage;
     }

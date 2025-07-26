@@ -8,7 +8,7 @@ class ImagesEntity implements JsonSerializable
 {
     public function __construct(
         /*
-         * @param ImageUrlEntity[] $images
+         * @param ImageEntity[] $images
          */
         private ?array $images = null,
     ) {

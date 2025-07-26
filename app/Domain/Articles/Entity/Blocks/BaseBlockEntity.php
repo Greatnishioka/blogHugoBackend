@@ -4,7 +4,7 @@ namespace App\Domain\Articles\Entity\Blocks;
 
 use JsonSerializable;
 
-class BlockEntity implements JsonSerializable
+class BaseBlockEntity implements JsonSerializable
 {
     public function __construct(
         private ?int $id,
@@ -13,7 +13,6 @@ class BlockEntity implements JsonSerializable
         private ?string $blockType,
         private ?string $content,
         private ?string $style,
-        private ?array $etc,
     ) {}
 
     public function jsonSerialize(): array
@@ -25,7 +24,6 @@ class BlockEntity implements JsonSerializable
             'block_type' => $this->blockType,
             'content' => $this->content,
             'style' => $this->style,
-            'etc' => $this->etc,
         ];
     }
 
@@ -49,9 +47,9 @@ class BlockEntity implements JsonSerializable
     {
         return $this->parentBlockUuid;
     }
-    public function setParentBlockId(?int $parentBlockId): void
+    public function setParentBlockUuid(?int $parentBlockUuid): void
     {
-        $this->parentBlockId = $parentBlockId;
+        $this->parentBlockUuid = $parentBlockUuid;
     }
     public function getBlockType(): ?string
     {
@@ -76,13 +74,5 @@ class BlockEntity implements JsonSerializable
     public function setStyle(?string $style): void
     {
         $this->style = $style;
-    }
-    public function getEtc(): ?array
-    {
-        return $this->etc;
-    }
-    public function setEtc(?array $etc): void
-    {
-        $this->etc = $etc;
     }
 }

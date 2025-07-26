@@ -4,13 +4,15 @@ namespace App\Domain\Articles\Infrastructure;
 use Illuminate\Http\Request;
 // Models
 use App\Models\Articles\Article;
-use App\Models\Articles\ArticleBlocks;
+use App\Models\Articles\ArticleBlock;
 use App\Models\Articles\ArticleDetail;
 use App\Models\Articles\ArticleOption;
 use App\Models\Articles\ArticleStatus;
 use App\Models\Articles\ArticleTag;
+use App\Models\Articles\Blocks\BlockImage;
 use App\Models\Status\Status;
 use App\Models\Options\Option;
+use App\Models\Images\Image;
 use App\Models\Tags\Tag;
 // Entities
 use App\Domain\Articles\Entity\ArticlesEntity;
@@ -23,7 +25,7 @@ use App\Domain\Articles\Entity\Blocks\BlockEntity;
 use App\Domain\Articles\Entity\Status\StatusEntity;
 use App\Domain\Articles\Entity\Option\OptionEntity;
 use App\Domain\Articles\Entity\Images\ImagesEntity;
-use App\Domain\Articles\Entity\Images\ImageUrlEntity;
+use App\Domain\Articles\Entity\Images\ImageEntity;
 // Repositories
 use App\Domain\Articles\Repository\ArticlesRepository;
 // Others
@@ -36,22 +38,24 @@ use Illuminate\Support\Str;
 class DbArticlesInfrastructure implements ArticlesRepository
 {
     private Article $article;
-    private ArticleBlocks $articleBlocks;
+    private ArticleBlock $articleBlocks;
     private ArticleDetail $articleDetail;
     private ArticleOption $articleOption;
     private ArticleStatus $articleStatus;
     private ArticleTag $articleTag;
+    private BlockImage $blockImage;
     private Tag $tag;
     private Status $status;
     private Option $option;
 
     public function __construct(
         Article $article,
-        ArticleBlocks $articleBlocks,
+        ArticleBlock $articleBlocks,
         ArticleDetail $articleDetail,
         ArticleOption $articleOption,
         ArticleStatus $articleStatus,
         ArticleTag $articleTag,
+        BlockImage $blockImage,
         Tag $tag,
         Status $status,
         Option $option
@@ -63,6 +67,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
         $this->articleOption = $articleOption;
         $this->articleStatus = $articleStatus;
         $this->articleTag = $articleTag;
+        $this->blockImage = $blockImage;
         $this->tag = $tag;
         $this->status = $status;
         $this->option = $option;
@@ -189,7 +194,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
     }
 
     #[\Override]
-    public function imageSave(Request $request): ImagesEntity
+    public function imageSave(Request $request): array
     {
         // この関数は最終的にはS3に置き換えたいけど、
         // それは自分がRust極めてRustで完璧にバックエンド描けるようになった時に予定しているリプレイスの時のために取っておく🍊
@@ -226,16 +231,25 @@ class DbArticlesInfrastructure implements ArticlesRepository
             $imageManager = new ImageManager(new Driver());
 
             foreach ($files as $index => $image) {
+                $blockUuid = $request->input("file.{$index}.blockUuid") ?? null;
+                if (!$blockUuid) {
+                    // ここでエラーをスローしたい
+                }
+                $imageName = $request->input("file.{$index}.imageName") ?? '';
+                $altText = $request->input("file.{$index}.altText") ?? '';
+
                 $img = $imageManager->read($image->getRealPath());
 
                 if ($topImage && $index === 0) {
-                    $saveDir = public_path('articles/' . $preNewDirectoryName . '/topImage');
+                    $targetDir = 'articles/' . $preNewDirectoryName . '/topImage';
+                    $saveDir = public_path($targetDir);
                     if (!file_exists($saveDir)) {
                         mkdir($saveDir, 0777, true);
                     }
                     $fileName = 'topImage.webp';
                 } else {
-                    $saveDir = public_path('articles/' . $preNewDirectoryName . '/articleImages');
+                    $targetDir = 'articles/' . $preNewDirectoryName . '/articleImages';
+                    $saveDir = public_path($targetDir);
                     if (!file_exists($saveDir)) {
                         mkdir($saveDir, 0777, true);
                     }
@@ -244,16 +258,24 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
                 $img->toWebp(90)->save($saveDir . '/' . $fileName);
 
-                $imageUrl = new ImageUrlEntity(
-                    null,
-                    $host . '/' . $preNewDirectoryName . ($topImage && $index === 0 ? '/topImage' : '/articleImages') . '/' . $fileName,
-                    null,
-                    null,
+                $savedImage = $this->blockImage->create([
+                    'block_uuid' => $blockUuid,
+                    'image_url' => $host . '/' . $targetDir . '/' . $fileName,
+                    'image_name' => $imageName,
+                    'alt_text' => $altText,
+                ]);
+
+                $imageUrl = new ImageEntity(
+                    $savedImage->id,
+                    $savedImage->block_uuid,
+                    $savedImage->image_url,
+                    $savedImage->image_name,
+                    $savedImage->alt_text,
                 );
                 $saveDestinationList[$index] = $imageUrl;
             }
 
-            return new ImagesEntity($saveDestinationList);
+            return $saveDestinationList;
 
         } catch (CouldNotSaveImageException $e) {
             throw new CouldNotSaveImageException($e->getMessage());
@@ -307,8 +329,8 @@ class DbArticlesInfrastructure implements ArticlesRepository
                     null,
                     "tester", // 将来的にはユーザーの情報を取得して表示する
                     $userId,
-                    new ImageUrlEntity(
-                        "tester",
+                    new ImageEntity(
+                        null,
                         "",
                         "",
                         ""
@@ -349,6 +371,8 @@ class DbArticlesInfrastructure implements ArticlesRepository
         $savedBlocks = [];
 
         foreach ($blocks as $block) {
+            $savedEtcInfo = [];
+
             $savedBlock = $this->articleBlocks->create([
                 'block_uuid' => $block['blockUuid'],
                 'article_id' => $id,
@@ -358,11 +382,33 @@ class DbArticlesInfrastructure implements ArticlesRepository
                 'parent_block_uuid' => $block['parentBlockUuid'] ?? null,
                 'order_from_parent_block' => $block['orderFromParentBlock'] ?? null,
                 'style' => $block['blockStyle'] ?? null,
-                'url' => $block['blockUrl'] ?? null,
-                'language' => $block['blockLanguage'] ?? null,
             ]);
 
             $savedBlockAttributes = $savedBlock->getAttributes();
+
+            // 各ブロックのタイプに応じて、etc情報を設定
+            switch ($block['blockType']) {
+                case 'img':
+
+                    // block_uuidを使用して、画像の情報を保存
+                    $savedEtcInfo = $this->registerImageBlock(
+                        $block,
+                        $savedBlockAttributes['block_uuid']
+                    );
+
+                    break;
+                // case 'link':
+
+                //     $savedEtcInfo = $this->registerLinkBlock(
+                //         $block,
+                //         $savedBlockAttributes['block_uuid']
+                //     );
+
+                //     break;
+                // case 'code':
+
+                //     break;
+            }
 
             $savedBlocks[] = new BlockEntity(
                 $savedBlockAttributes['id'],
@@ -371,8 +417,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
                 $savedBlockAttributes['block_type'],
                 $savedBlockAttributes['content'],
                 $savedBlockAttributes['style'] ?? null,
-                $savedBlockAttributes['url'] ?? null,
-                $savedBlockAttributes['language'] ?? null
+                $savedEtcInfo
             );
         }
 
@@ -398,16 +443,16 @@ class DbArticlesInfrastructure implements ArticlesRepository
         foreach ($status as $st) {
             $savedStatus = $this->articleStatus->create([
                 'article_id' => $id,
-                'option_id' => $st['statusId'],
-                'option_value' => $st['statusValue'],
+                'status_id' => $st['statusId'],
+                'status_value' => $st['statusValue'],
             ]);
 
             $status = $savedStatus->getAttributes();
 
             $savedStatuses[] = new ArticleStatusEntity(
                 $status['article_id'],
-                $status['option_id'],
-                $status['option_value']
+                $status['status_id'],
+                $status['status_value']
             );
         }
 
@@ -451,5 +496,23 @@ class DbArticlesInfrastructure implements ArticlesRepository
             );
         }
         return $savedOptions;
+    }
+
+    private function registerImageBlock(array $block, int $uuid): array
+    {
+        $savedBlockImage = $this->blockImage->create([
+            'block_uuid' => $uuid,
+            'image_name' => $block['imageName'] ?? null,
+            'image_url' => $block['imageUrl'] ?? null,
+            'alt_text' => $block['altText'] ?? null,
+        ]);
+
+        $savedBlockImageAttributes = $savedBlockImage->getAttributes();
+
+        return [
+            'image_name' => $savedBlockImageAttributes['image_name'],
+            'image_url' => $savedBlockImageAttributes['image_url'],
+            'alt_text' => $savedBlockImageAttributes['alt_text'],
+        ];
     }
 }

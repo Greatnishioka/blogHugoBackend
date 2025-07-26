@@ -1,0 +1,123 @@
+{
+    "id": 1,
+    "userId": 1,
+    "articleId": 1,
+    "detail": {
+        "articleId": 1,
+        "title": "Sample Article",
+        "author": "John Doe",
+        "authorId": 1,
+        "topImage": null,
+        "status": [
+            {
+                "articleId": 1,
+                "statusId": 1,
+                "statusValue": true
+            },
+            {
+                "articleId": 1,
+                "statusId": 2,
+                "statusValue": false
+            },
+            {
+                "articleId": 1,
+                "statusId": 3,
+                "statusValue": true
+            },
+            {
+                "articleId": 1,
+                "statusId": 4,
+                "statusValue": false
+            }
+        ]
+    },
+    "tags": {
+        "articleId": 1,
+        "tag": [
+            "test",
+            "example",
+            "sample",
+            "article",
+            "block"
+        ]
+    },
+    "blocks": {
+        "articleId": 1,
+        "blocks": [
+            {
+                "blockUuid": "123e4567-e89b-12d3-a456-426614174000",
+                "parentBlockUuid": null,
+                "blockType": "link",
+                "content": "リンクのテキストです。",
+                "style": null
+            },
+            {
+                "blockUuid": "123e4567-e89b-12d3-a456-426614174001",
+                "parentBlockUuid": null,
+                "blockType": "paragraph",
+                "content": "これは段落のテキストです。",
+                "style": null
+            },
+            {
+                "blockUuid": "123e4567-e89b-12d3-a456-426614174002",
+                "parentBlockUuid": null,
+                "blockType": "img",
+                "content": "",
+                "style": null
+            },
+            {
+                "blockUuid": "123e4567-e89b-12d3-a456-426614174003",
+                "parentBlockUuid": null,
+                "blockType": "code",
+                "content": "<SampleComponent />",
+                "style": null
+            }
+        ],
+        "images": [
+            {
+                "blockUuid": "123e4567-e89b-12d3-a456-426614174002",
+                "image_url": "http://example.com/image.jpg",
+                "image_name": "サンプルのイメージです。",
+                "alt_text": "This is a sample image."
+            }
+        ],
+        "links": [
+            {
+                "blockUuid": "123e4567-e89b-12d3-a456-426614174001",
+                "url": "http://example.com"
+            }
+        ],
+        "code": [
+            {
+                "blockUuid": "123e4567-e89b-12d3-a456-426614174003",
+                "language": "tsx",
+                "filename": "SampleComponent.tsx"
+            }
+        ]
+    },
+    "option": {
+        "articleId": 1,
+        "option": [
+            {
+                "articleId": 1,
+                "optionId": 1,
+                "optionValue": true
+            },
+            {
+                "articleId": 1,
+                "optionId": 2,
+                "optionValue": false
+            },
+            {
+                "articleId": 1,
+                "optionId": 3,
+                "optionValue": true
+            },
+            {
+                "articleId": 1,
+                "optionId": 4,
+                "optionValue": false
+            }
+        ]
+    }
+}

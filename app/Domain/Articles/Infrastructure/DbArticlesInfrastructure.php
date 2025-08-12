@@ -28,6 +28,9 @@ use App\Domain\Articles\Entity\Images\ImagesEntity;
 use App\Domain\Articles\Entity\Images\ImageEntity;
 // Repositories
 use App\Domain\Articles\Repository\ArticlesRepository;
+// DTOs
+use App\Domain\Articles\DTO\RegisterArticleDTO;
+use App\Domain\Articles\DTO\GetArticleDTO;
 // Others
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -74,7 +77,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
     }
 
     #[\Override]
-    public function registerArticles(Request $request): ArticlesEntity
+    public function registerArticles(RegisterArticleDTO $dto): ArticlesEntity
     {
         try {
 
@@ -84,31 +87,31 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
             // 記事のブロックの作成
             $savedBlocks = $this->registerBlockArticle(
-                $request->input('blocks'),
+                $dto->blocks,
                 $savedArticles['id']
             );
 
             // 記事の詳細の作成
             $savedDetail = $this->registerDetailArticle(
-                $request->input('detail'),
+                $dto->detail,
                 $savedArticles['id']
             );
 
             // 記事のステータスの作成
             $savedStatus = $this->registerStatusArticle(
-                $request->input('status'),
+                $dto->status,
                 $savedArticles['id']
             );
 
             // 記事のタグの作成
             $savedTags = $this->registerTagsArticle(
-                $request->input('tags'),
+                $dto->tags,
                 $savedArticles['id']
             );
 
             // 記事のオプションの作成(公開・非公開など)
             $savedOptions = $this->registerOptions(
-                $request->input('options'),
+                $dto->options,
                 $savedArticles['id']
             );
 
@@ -117,7 +120,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
                 new ArticleDetailEntity(
                     $savedDetail['article_uuid'],
                     $savedDetail['title'],
-                    $savedDetail['note'], // これちゃんとプログラムを組む
+                    $savedDetail['note'],
                     null,
                     $savedStatus
                 ),
@@ -164,22 +167,14 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
     // 未実装
     #[\Override]
-    public function getArticlesList(Request $request): array
+    public function getArticlesList(GetArticleDTO $dto): array
     {
-        $userId = $request->query('userId');
-        $start = $request->query('start', 0); // 取得してくる記事の開始位置
-        $end = $request->query('end', 10); // 取得してくる記事の終了位置
-
         $articlesDetails = $this->articleDetail
-            ->where('user_uuid', $userId)
+            ->where('user_uuid', $dto->userId)
             ->orderBy('created_at', 'desc')
-            ->skip($start)
-            ->take($end - $start)
-            ->get();
+            ->paginate($dto->perPage);
 
-        // どこまで取得して、どういうデータを返すかは後で考える
-
-        return [];
+        return $articlesDetails;
     }
 
     // 未実装
@@ -395,7 +390,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
             $savedEtcInfo = [];
 
             $savedBlock = $this->articleBlocks->create([
-                'block_uuid' => $block['blockUuid'],
+                'block_uuid' => $block['blockUuid'], // このuuidはフロントエンド側で生成したものを使用
                 'article_id' => $id,
                 'block_type' => $block['blockType'],
                 'content' => $block['content'],
@@ -433,6 +428,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
             $savedBlocks[] = new BlockEntity(
                 $savedBlockAttributes['id'],
+                $savedBlockAttributes['block_uuid'],
                 $savedBlockAttributes['article_id'],
                 $savedBlockAttributes['parent_block_uuid'] ?? null,
                 $savedBlockAttributes['block_type'],
@@ -452,7 +448,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
             'user_uuid' => $detail['userUuid'],
             'article_uuid' => (string) Str::uuid(),
             'title' => $detail['title'],
-            'note' => $detail['note'],
+            'note' => $detail['note'], // これ用途どうする？
         ]);
 
         return $savedDetail->getAttributes();
@@ -525,7 +521,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
         return $savedOptions;
     }
 
-    private function registerImageBlock(array $block, int $uuid): array
+    private function registerImageBlock(array $block, string $uuid): array
     {
         $savedBlockImage = $this->blockImage->create([
             'block_uuid' => $uuid,
@@ -534,12 +530,6 @@ class DbArticlesInfrastructure implements ArticlesRepository
             'alt_text' => $block['altText'] ?? null,
         ]);
 
-        $savedBlockImageAttributes = $savedBlockImage->getAttributes();
-
-        return [
-            'image_name' => $savedBlockImageAttributes['image_name'],
-            'image_url' => $savedBlockImageAttributes['image_url'],
-            'alt_text' => $savedBlockImageAttributes['alt_text'],
-        ];
+        return $savedBlockImage->toArray();
     }
 }

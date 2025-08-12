@@ -15,7 +15,7 @@ class ArticleTagsEntity implements JsonSerializable
     {
         return [
             'article_id' => $this->articleId,
-            'tags' => $this->tags ? array_map(fn($tag) => $tag->jsonSerialize(), $this->tags) : [],
+            'tags' => $this->tags,
         ];
     }
 

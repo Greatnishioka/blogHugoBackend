@@ -9,7 +9,7 @@ class UserOption extends Model
 {
     use HasFactory;
 
-    protected $table = 'user_options';
+    protected $table = 'user_option';
     protected $primaryKey = 'id';
     public $incrementing = true;
     protected $keyType = 'int';

@@ -12,6 +12,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->register(\App\Domain\Articles\ArticlesProvider::class);
+        $this->app->register(\App\Domain\Users\UsersProvider::class);
     }
 
     /**

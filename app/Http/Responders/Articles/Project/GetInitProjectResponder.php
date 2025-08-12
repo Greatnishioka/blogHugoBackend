@@ -27,7 +27,6 @@ class GetInitProjectResponder extends BaseApiResponder
                     'author' => $detail->getAuthor(),
                     'authorId' => 1,
                     'topImage' => [
-                        'owner' => $topImage->getOwner(),
                         'imageUrl' => '',
                         'imageName' => '',
                         'altText' => '',

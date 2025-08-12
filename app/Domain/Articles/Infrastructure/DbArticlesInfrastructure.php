@@ -80,7 +80,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
             // 記事の大枠の作成
             // ここで作成した記事のIDを元に、他の情報を紐づけていく
-            $savedArticles = $this->registerMainArticle($request->input('userId'));
+            $savedArticles = $this->registerMainArticle();
 
             // 記事のブロックの作成
             $savedBlocks = $this->registerBlockArticle(
@@ -114,14 +114,11 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
             return new ArticlesEntity(
                 $savedArticles['id'],
-                $savedArticles['user_id'], // ユーザーIDは記事の作成者のID
-                $savedArticles['article_id'], // このidは閲覧者が記事へのアクセスの時にurlに露出する用
                 new ArticleDetailEntity(
-                    $savedArticles['id'],
+                    $savedDetail['article_uuid'],
                     $savedDetail['title'],
-                    $savedDetail['author'],
-                    $savedDetail['author_id'],
-                    null, // これちゃんとプログラムを組む
+                    $savedDetail['note'], // これちゃんとプログラムを組む
+                    null,
                     $savedStatus
                 ),
                 new ArticleTagsEntity(
@@ -140,6 +137,52 @@ class DbArticlesInfrastructure implements ArticlesRepository
         }
     }
 
+    // 未実装
+    #[\Override]
+    public function updateArticles(Request $request): ArticlesEntity
+    {
+        return new ArticlesEntity(
+            $request->input('id'),
+            new ArticleDetailEntity(
+                $request->input('detail.article_uuid'),
+                $request->input('detail.title'),
+                $request->input('detail.author'),
+                $request->input('detail.author_id'),
+                $request->input('status'),
+            ),
+            new ArticleTagsEntity(
+                $request->input('id'),
+                $request->input('tags')
+            ),
+            new ArticleBlockEntity(
+                $request->input('id'),
+                $request->input('blocks')
+            ),
+            $request->input('options')
+        );
+    }
+
+    // 未実装
+    #[\Override]
+    public function getArticlesList(Request $request): array
+    {
+        $userId = $request->query('userId');
+        $start = $request->query('start', 0); // 取得してくる記事の開始位置
+        $end = $request->query('end', 10); // 取得してくる記事の終了位置
+
+        $articlesDetails = $this->articleDetail
+            ->where('user_uuid', $userId)
+            ->orderBy('created_at', 'desc')
+            ->skip($start)
+            ->take($end - $start)
+            ->get();
+
+        // どこまで取得して、どういうデータを返すかは後で考える
+
+        return [];
+    }
+
+    // 未実装
     #[\Override]
     public function getArticles(Request $request): ArticlesEntity
     {
@@ -167,24 +210,8 @@ class DbArticlesInfrastructure implements ArticlesRepository
                 $articleAttributes['id'],
                 $articleAttributes['user_id'], // ユーザーIDは記事の作成者のID
                 $articleAttributes['article_id'],
-                new ArticleDetailEntity(
-                    $articleAttributes['id'],
-                    null, // $savedDetail['title'],
-                    null, // $savedDetail['author'],
-                    null, // $savedDetail['author_id'],
-                    null, // null, // これちゃんとプログラムを組む
-                    []
-                ),
-                new ArticleTagsEntity(
-                    $articleAttributes['id'],
-                    []
-                ),
-                new ArticleBlockEntity(
-                    $articleAttributes['id'],
-                    []
-
-                ),
-                [],
+                null,
+                null,
             );
 
 
@@ -322,13 +349,10 @@ class DbArticlesInfrastructure implements ArticlesRepository
             // リクエスト内容
             return new ArticlesEntity(
                 null,
-                $userId, // ユーザーIDは記事の作成者のID
-                null,
                 new ArticleDetailEntity(
                     null,
                     null,
                     "tester", // 将来的にはユーザーの情報を取得して表示する
-                    $userId,
                     new ImageEntity(
                         null,
                         "",
@@ -354,13 +378,10 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
     // 以下は便利に使えるメソッド
 
-    public function registerMainArticle(int $userId): array
+    public function registerMainArticle(): array
     {
         // 記事の登録
-        $savedArticles = $this->article->create([
-            'user_id' => $userId, // ユーザーIDは記事の作成者のID
-            'article_id' => (string) Str::uuid(),
-        ]);
+        $savedArticles = $this->article->create();
 
         return $savedArticles->getAttributes();
     }
@@ -428,9 +449,10 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
         $savedDetail = $this->articleDetail->create([
             'article_id' => $id,
+            'user_uuid' => $detail['userUuid'],
+            'article_uuid' => (string) Str::uuid(),
             'title' => $detail['title'],
-            'author' => $detail['author'],
-            'author_id' => $detail['authorId'],
+            'note' => $detail['note'],
         ]);
 
         return $savedDetail->getAttributes();
@@ -462,19 +484,24 @@ class DbArticlesInfrastructure implements ArticlesRepository
     private function registerTagsArticle($tag, $id): array
     {
 
-        $tag1 = $this->tag->firstOrCreate(['content' => $tag['tag1']]);
-        $tag2 = $this->tag->firstOrCreate(['content' => $tag['tag2']]);
-        $tag3 = $this->tag->firstOrCreate(['content' => $tag['tag3']]);
-        $tag4 = $this->tag->firstOrCreate(['content' => $tag['tag4']]);
-        $tag5 = $this->tag->firstOrCreate(['content' => $tag['tag5']]);
+        $tags = [];
+        if (!empty($tag['tag1'])) {
+            $tags[] = $this->tag->firstOrCreate(['content' => $tag['tag1']]);
+        }
+        if (!empty($tag['tag2'])) {
+            $tags[] = $this->tag->firstOrCreate(['content' => $tag['tag2']]);
+        }
+        if (!empty($tag['tag3'])) {
+            $tags[] = $this->tag->firstOrCreate(['content' => $tag['tag3']]);
+        }
+        if (!empty($tag['tag4'])) {
+            $tags[] = $this->tag->firstOrCreate(['content' => $tag['tag4']]);
+        }
+        if (!empty($tag['tag5'])) {
+            $tags[] = $this->tag->firstOrCreate(['content' => $tag['tag5']]);
+        }
 
-        return [
-            new ArticleTagsEntity($id, $tag1->getAttributes()),
-            new ArticleTagsEntity($id, $tag2->getAttributes()),
-            new ArticleTagsEntity($id, $tag3->getAttributes()),
-            new ArticleTagsEntity($id, $tag4->getAttributes()),
-            new ArticleTagsEntity($id, $tag5->getAttributes()),
-        ];
+        return array_map(fn($tag) => new ArticleTagsEntity($id, $tag->getAttributes()), $tags);
     }
 
     private function registerOptions(array $option, int $id): array

@@ -11,8 +11,7 @@ class ArticleDetailEntity implements JsonSerializable
     public function __construct(
         private ?string $articleId = null,
         private ?string $title = null,
-        private ?string $author = null,
-        private ?int $authorId = null,
+        private ?string $note = null,
         private ?ImageEntity $topImage = null,
         /*
          * @param ArticleStatusEntity[] $status
@@ -26,18 +25,17 @@ class ArticleDetailEntity implements JsonSerializable
         return [
             'article_id' => $this->articleId,
             'title' => $this->title,
-            'author' => $this->author,
-            'author_id' => $this->authorId,
+            'note' => $this->note,
             'top_image' => $this->topImage ? $this->topImage->jsonSerialize() : null,
             'status' => $this->status ? array_map(fn($s) => $s->jsonSerialize(), $this->status) : null,
         ];
     }
 
-    public function getArticleId(): ?int
+    public function getArticleId(): ?string
     {
         return $this->articleId;
     }
-    public function setArticleId(?int $articleId): void
+    public function setArticleId(?string $articleId): void
     {
         $this->articleId = $articleId;
     }
@@ -49,21 +47,13 @@ class ArticleDetailEntity implements JsonSerializable
     {
         $this->title = $title;
     }
-    public function getAuthor(): ?string
+    public function getNote(): ?string
     {
-        return $this->author;
+        return $this->note;
     }
-    public function setAuthor(?string $author): void
+    public function setNote(?string $note): void
     {
-        $this->author = $author;
-    }
-    public function getAuthorId(): ?int
-    {
-        return $this->authorId;
-    }
-    public function setAuthorId(?int $authorId): void
-    {
-        $this->authorId = $authorId;
+        $this->note = $note;
     }
     public function getTopImage(): ?ImageEntity
     {

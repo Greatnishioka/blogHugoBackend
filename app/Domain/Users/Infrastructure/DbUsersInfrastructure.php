@@ -7,6 +7,10 @@ use App\Models\User\User;
 use App\Models\User\UserData;
 use App\Models\User\UserOption;
 use App\Models\User\UserStatus;
+
+use App\Models\Options\Option;
+use App\Models\Status\Status;
+use App\Models\User\UserAuth;
 // Entities
 use App\Domain\Users\Entity\UsersOption\UserOptionEntity;
 use App\Domain\Users\Entity\UsersStatus\UserStatusEntity;
@@ -23,18 +27,26 @@ class DbUsersInfrastructure implements UsersRepository
     private UserData $userData;
     private UserOption $userOption;
     private UserStatus $userStatus;
+    private Option $option;
+    private Status $status;
+    private UserAuth $userAuth;
 
     public function __construct(
         User $user,
         UserData $userData,
         UserOption $userOption,
-        UserStatus $userStatus
-
+        UserStatus $userStatus,
+        Option $option,
+        Status $status,
+        UserAuth $userAuth
     ) {
         $this->user = $user;
         $this->userData = $userData;
         $this->userOption = $userOption;
         $this->userStatus = $userStatus;
+        $this->option = $option;
+        $this->status = $status;
+        $this->userAuth = $userAuth;
     }
 
     #[\Override]
@@ -49,15 +61,15 @@ class DbUsersInfrastructure implements UsersRepository
 
         try {
 
-            if ($this->user->where('email', $request->input('email'))->exists()) {
+            if ($this->userAuth->where('email', $request->input('email'))->exists()) {
                 throw new \RuntimeException('Email already exists.');
             }
 
             $savedUser = $this->registerMainUser();
 
             $userData = $this->registerUserData($request->input('userData'), $savedUser['id']);
-            $userOption = $this->registerUserOption($request->input('userOption'), $savedUser['id']);
-            $userStatus = $this->registerUserStatus($request->input('userStatus'), $savedUser['id']);
+            $userOption = $this->registerUserOption($savedUser['id']);
+            $userStatus = $this->registerUserStatus($savedUser['id']);
 
             return new UserEntity(
                 $savedUser['id'],
@@ -70,11 +82,8 @@ class DbUsersInfrastructure implements UsersRepository
                     $userData['occupation'],
                     $userStatus
                 ),
-                new UserOptionEntity(
-                    $userOption['user_id'],
-                    $userOption['option_id'],
-                    $userOption['option_value']
-                )
+                $userOption,
+                $userStatus
             );
 
 
@@ -105,43 +114,49 @@ class DbUsersInfrastructure implements UsersRepository
         return $userData->getAttributes();
     }
 
-    private function registerUserOption($option, $id): array
+    private function registerUserOption($id): array
     {
         $savedOptions = [];
 
-        foreach ($option as $op) {
+        $options = $this->option->all();
+
+        foreach ($options as $op) {
             $savedOption = $this->userOption->create([
                 'user_id' => $id,
-                'option_id' => $op['optionId'],
-                'option_value' => $op['optionValue'],
+                'option_id' => $op['id'],
+                // 初期値を入れたいのでoption_valueは設定しない
             ]);
 
+            $option = $savedOption->getAttributes();
+
             $savedOptions[] = new UserOptionEntity(
-                $savedOption->getAttributes()['user_id'],
-                $savedOption->getAttributes()['option_id'],
-                $savedOption->getAttributes()['option_value']
+                $option['user_id'],
+                $option['option_id'],
+                $option['option_value']
             );
         }
         return $savedOptions;
     }
 
-    private function registerUserStatus($status, $id): array
+    private function registerUserStatus($id): array
     {
         $savedStatuses = [];
+
+        $status = $this->status->all();
 
         foreach ($status as $st) {
             $savedStatus = $this->userStatus->create([
                 'user_id' => $id,
-                'option_id' => $st['statusId'],
-                'option_value' => $st['statusValue'],
+                'status_id' => $st['id'],
+                // 初期値を入れたいのでstatus_valueは設定しない
             ]);
 
             $status = $savedStatus->getAttributes();
 
             $savedStatuses[] = new UserStatusEntity(
                 $status['user_id'],
-                $status['option_id'],
-                $status['option_value']
+                $status['status_id'],
+                $status['status_value']
             );
         }
 

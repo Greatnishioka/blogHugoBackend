@@ -10,33 +10,36 @@ class RegisterArticlesResponder extends BaseApiResponder{
     
     public function success(array $data = [], string $message = 'Success', int $status = 200): BaseApiResource
     {
-        $formattedData = array_map(function ($article) {
-            return [
-                'id' => $article->getId(),
-                'title' => $article->getTitle(),
-                'author' => $article->getAuthor(),
-                'authorId' => $article->getAuthorId(),
-                'viewCount' => $article->getViewCount(),
-                'blocks' => array_map(function ($block) {
-                    return [
-                        'id' => $block->getId(),
-                        'articleId' => $block->getArticleId(),
-                        'parentBlockId' => $block->getParentBlockUuid(),
-                        'blockType' => $block->getBlockType(),
-                        'content' => $block->getContent(),
-                        'style' => $block->getStyle(),
-                        'url' => $block->getUrl(),
-                        'language' => $block->getLanguage(),
-                    ];
-                }, $article->getBlocks() ?? []),
-            ];
-        }, $data);
+
+        $data = $data[0];
+        $detail = $data->getDetail();
+        $options = $data->getOptions();
+        $tags = $data->getTags();
+        $blocks = $data->getBlocks();
+        $topImage = $detail->getTopImage();
 
         return new BaseApiResource([
             'status' => $status,
             'message' => $message,
-            'data' => $formattedData,
+            'data' => [
+                'articleId' => $detail->getArticleId(),
+                'detail' => [
+                    'title' => $detail->getTitle(),
+                    'note' => $detail->getNote(),
+                    'topImage' => [
+                        'imageUrl' => '',
+                        'imageName' => '',
+                        'altText' => '',
+                    ],
+                    'status' => $detail->getStatus(),
+                ],
+                'tags' => $tags,
+                'blocks' => $blocks,
+                'options' => $options,
+            ]
         ]);
+
+
     }
 
     public function error(string $message, ?array $errors = null, int $status = 422): BaseApiResource

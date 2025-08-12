@@ -12,8 +12,6 @@ return new class extends Migration {
     {
         Schema::create('articles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade')->comment('記事の作成者のユーザーID。usersテーブルの外部キー。');
-            $table->string('article_uuid')->nullable()->comment('記事のUUID');
             $table->timestamps();
         });
     }

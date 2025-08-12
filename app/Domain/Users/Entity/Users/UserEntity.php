@@ -13,7 +13,8 @@ class UserEntity implements JsonSerializable
         private ?int $id = null,
         private ?string $userUuid = null,
         private ?UserDataEntity $userData = null,
-        private ?UserOptionEntity $userOption = null,
+        private ?array $userOption = null,
+        private ?array $userStatus = null,
     ) {
     }
 
@@ -23,7 +24,8 @@ class UserEntity implements JsonSerializable
             'id' => $this->id,
             'userUuid' => $this->userUuid,
             'userData' => $this->userData ? $this->userData->jsonSerialize() : null,
-            'userOption' => $this->userOption ? $this->userOption->jsonSerialize() : null,
+            'userOption' => $this->userOption ? array_map(fn($option) => $option->jsonSerialize(), $this->userOption) : null,
+            'userStatus' => $this->userStatus ? array_map(fn($status) => $status->jsonSerialize(), $this->userStatus) : null,
         ];
     }
     public function getId(): ?int
@@ -50,13 +52,21 @@ class UserEntity implements JsonSerializable
     {
         $this->userData = $userData;
     }
-    public function getUserOption(): ?UserOptionEntity
+    public function getUserOption(): ?array
     {
         return $this->userOption;
     }
-    public function setUserOption(?UserOptionEntity $userOption): void
+    public function setUserOption(?array $userOption): void
     {
         $this->userOption = $userOption;
+    }
+    public function getUserStatus(): ?array
+    {
+        return $this->userStatus;
+    }
+    public function setUserStatus(?array $userStatus): void
+    {
+        $this->userStatus = $userStatus;
     }
 
 }

@@ -9,7 +9,7 @@ class BlockEntity implements JsonSerializable
     public function __construct(
         private ?int $id,
         private ?int $articleId,
-        private ?int $parentBlockUuid,
+        private ?string $parentBlockUuid,
         private ?string $blockType,
         private ?string $content,
         private ?string $style,
@@ -45,7 +45,7 @@ class BlockEntity implements JsonSerializable
     {
         $this->articleId = $articleId;
     }
-    public function getParentBlockUuid(): ?int
+    public function getParentBlockUuid(): ?string
     {
         return $this->parentBlockUuid;
     }

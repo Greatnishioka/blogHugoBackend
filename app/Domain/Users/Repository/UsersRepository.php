@@ -1,8 +1,6 @@
 <?php
 
 namespace App\Domain\Users\Repository;
-use App\Domain\Users\Entity\Login\LoginEntity;
-use App\Domain\Users\Entity\Logout\LogoutEntity;
 use App\Domain\Users\Entity\Users\UserEntity;
 use Illuminate\Http\Request;
 

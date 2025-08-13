@@ -7,6 +7,8 @@ use App\Exceptions\BaseException;
 use App\Domain\Users\Repository\UsersRepository;
 use App\Domain\Users\Entity\Users\UserEntity;
 
+use App\Domain\Users\DTO\RegisterUserDTO;
+
 use RuntimeException;
 
 class RegisterUseCase {
@@ -21,8 +23,9 @@ class RegisterUseCase {
     {
         try{
 
-            return $this->repository->register($request);
-            
+            $dto = RegisterUserDTO::fromRequest($request);
+            return $this->repository->register($dto);
+
         }catch(BaseException $e){
             throw new RuntimeException($e->getMessage());
         }

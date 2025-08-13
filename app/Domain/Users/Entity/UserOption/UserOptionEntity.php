@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Users\Entity\UsersOption;
+namespace App\Domain\Users\Entity\UserOption;
 
 use JsonSerializable;
 

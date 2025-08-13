@@ -12,10 +12,6 @@ class UserDataEntity implements JsonSerializable
         private ?string $iconUrl = null,
         private ?string $bio = null,
         private ?string $occupation = null,
-        /*
-         * @param UserStatusEntity[] $status
-         */
-        private ?array $status = null
     ) {
     }
 
@@ -27,7 +23,6 @@ class UserDataEntity implements JsonSerializable
             'iconUrl' => $this->iconUrl,
             'bio' => $this->bio,
             'occupation' => $this->occupation,
-            'status' => $this->status,
         ];
     }
     public function getUserId(): ?int
@@ -69,14 +64,6 @@ class UserDataEntity implements JsonSerializable
     public function setOccupation(?string $occupation): void
     {
         $this->occupation = $occupation;
-    }
-    public function getStatus(): ?array
-    {
-        return $this->status;
-    }
-    public function setStatus(?array $status): void
-    {
-        $this->status = $status;
     }
 
 }

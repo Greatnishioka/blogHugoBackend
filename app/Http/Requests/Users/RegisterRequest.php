@@ -11,8 +11,10 @@ class RegisterRequest extends BaseApiRequest
     public function rules(): array
     {
         return [
-            'mailadress' => ['required', 'string', 'email'],
-            'password' => [
+            'userAuth' => ['required', 'array'],
+
+            'userAuth.email' => ['required', 'string', 'email'],
+            'userAuth.password' => [
                 'required',
                 'string',
                 'confirmed',
@@ -34,9 +36,9 @@ class RegisterRequest extends BaseApiRequest
     public function messages(): array
     {
         return [
-            'mailadress.required' => 'メールアドレスは必須です。',
-            'mailadress.string' => 'メールアドレスは文字列でなければなりません。',
-            'mailadress.email' => 'メールアドレスの形式が正しくありません。',
+            'email.required' => 'メールアドレスは必須です。',
+            'email.string' => 'メールアドレスは文字列でなければなりません。',
+            'email.email' => 'メールアドレスの形式が正しくありません。',
             'password.required' => 'パスワードは必須です。',
             'password.string' => 'パスワードは文字列でなければなりません。',
             'password.confirmed' => 'パスワードの確認が一致しません。',

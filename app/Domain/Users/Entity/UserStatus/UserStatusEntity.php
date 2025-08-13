@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Users\Entity\UsersStatus;
+namespace App\Domain\Users\Entity\UserStatus;
 
 use JsonSerializable;
 

@@ -13,6 +13,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->register(\App\Domain\Articles\ArticlesProvider::class);
         $this->app->register(\App\Domain\Users\UsersProvider::class);
+        $this->app->register(\App\Domain\Auth\AuthProvider::class);
     }
 
     /**

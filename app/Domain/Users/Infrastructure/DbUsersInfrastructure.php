@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Domain\Users\Infrastructure;
-use Illuminate\Http\Request;
+
 // Models
 use App\Models\User\User;
 use App\Models\User\UserData;
@@ -12,14 +12,17 @@ use App\Models\Options\Option;
 use App\Models\Status\Status;
 use App\Models\User\UserAuth;
 // Entities
-use App\Domain\Users\Entity\UsersOption\UserOptionEntity;
-use App\Domain\Users\Entity\UsersStatus\UserStatusEntity;
+use App\Domain\Users\Entity\UserOption\UserOptionEntity;
+use App\Domain\Users\Entity\UserStatus\UserStatusEntity;
 use App\Domain\Users\Entity\UserData\UserDataEntity;
 use App\Domain\Users\Entity\Users\UserEntity;
 // Repositories
 use App\Domain\Users\Repository\UsersRepository;
+// DTOs
+use App\Domain\Users\DTO\RegisterUserDTO;
 // Others
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class DbUsersInfrastructure implements UsersRepository
 {
@@ -56,18 +59,21 @@ class DbUsersInfrastructure implements UsersRepository
     }
 
     #[\Override]
-    public function Register(Request $request): UserEntity
+    public function Register(RegisterUserDTO $dto): UserEntity
     {
 
-        try {
-
-            if ($this->userAuth->where('email', $request->input('email'))->exists()) {
+        return DB::transaction(function () use ($dto) {
+ 
+            $userAuthDTO = $dto->userAuth;
+            
+            // e-mailはダブリなし
+            if ($this->userAuth->where(column: 'email', operator: $userAuthDTO['email'])->exists()) {
                 throw new \RuntimeException('Email already exists.');
             }
 
             $savedUser = $this->registerMainUser();
 
-            $userData = $this->registerUserData($request->input('userData'), $savedUser['id']);
+            $userData = $this->registerUserData($dto->userData, $savedUser['id']);
             $userOption = $this->registerUserOption($savedUser['id']);
             $userStatus = $this->registerUserStatus($savedUser['id']);
 
@@ -80,16 +86,11 @@ class DbUsersInfrastructure implements UsersRepository
                     $userData['icon_url'],
                     $userData['bio'],
                     $userData['occupation'],
-                    $userStatus
                 ),
                 $userOption,
                 $userStatus
             );
-
-
-        } catch (\Exception $e) {
-            throw new \RuntimeException('Registration failed: ' . $e->getMessage());
-        }
+        });
     }
 
     private function registerMainUser(): array
@@ -101,7 +102,7 @@ class DbUsersInfrastructure implements UsersRepository
         return $user->getAttributes();
     }
 
-    private function registerUserData($data, $id): array
+    private function registerUserData(array $data, int $id): array
     {
         $userData = $this->userData->create([
             'user_id' => $id,
@@ -114,7 +115,7 @@ class DbUsersInfrastructure implements UsersRepository
         return $userData->getAttributes();
     }
 
-    private function registerUserOption($id): array
+    private function registerUserOption(int $id): array
     {
         $savedOptions = [];
 
@@ -124,7 +125,7 @@ class DbUsersInfrastructure implements UsersRepository
             $savedOption = $this->userOption->create([
                 'user_id' => $id,
                 'option_id' => $op['id'],
-                // 初期値を入れたいのでoption_valueは設定しない
+                'option_value' => false,
             ]);
 
             $option = $savedOption->getAttributes();
@@ -138,7 +139,7 @@ class DbUsersInfrastructure implements UsersRepository
         return $savedOptions;
     }
 
-    private function registerUserStatus($id): array
+    private function registerUserStatus(int $id): array
     {
         $savedStatuses = [];
 
@@ -148,7 +149,7 @@ class DbUsersInfrastructure implements UsersRepository
             $savedStatus = $this->userStatus->create([
                 'user_id' => $id,
                 'status_id' => $st['id'],
-                // 初期値を入れたいのでstatus_valueは設定しない
+                'status_value' => false,
             ]);
 
             $status = $savedStatus->getAttributes();
@@ -162,5 +163,4 @@ class DbUsersInfrastructure implements UsersRepository
 
         return $savedStatuses;
     }
-
 }

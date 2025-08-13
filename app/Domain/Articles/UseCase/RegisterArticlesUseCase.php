@@ -3,13 +3,16 @@
 namespace App\Domain\Articles\UseCase;
 
 use Illuminate\Http\Request;
+
 use App\Exceptions\BaseException;
 use App\Domain\Articles\Repository\ArticlesRepository;
 use App\Domain\Articles\Entity\ArticlesEntity;
+use App\Domain\Articles\DTO\RegisterArticleDTO;
 
 use RuntimeException;
 
-class RegisterArticlesUseCase {
+class RegisterArticlesUseCase
+{
     private ArticlesRepository $repository;
 
     public function __construct(ArticlesRepository $repository)
@@ -19,11 +22,11 @@ class RegisterArticlesUseCase {
 
     public function __invoke(Request $request): ArticlesEntity
     {
-        try{
+        try {
+            $dto = RegisterArticleDTO::fromRequest($request);
+            return $this->repository->registerArticles($dto);
 
-            return $this->repository->registerArticles($request);
-            
-        }catch(BaseException $e){
+        } catch (BaseException $e) {
             throw new RuntimeException($e->getMessage());
         }
     }

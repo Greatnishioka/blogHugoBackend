@@ -4,36 +4,38 @@ namespace App\Domain\Articles\Entity;
 
 use JsonSerializable;
 
-use App\Domain\Articles\Entity\Images\ImageUrlEntity;
+use App\Domain\Articles\Entity\Images\ImageEntity;
 
 class ArticleDetailEntity implements JsonSerializable
 {
     public function __construct(
         private ?string $articleId = null,
         private ?string $title = null,
-        private ?string $author = null,
-        private ?int $authorId = null,
-        private ?ImageUrlEntity $topImage = null,
-        private ?ArticleStatusEntity $viewCount = null,
-    ) {}
+        private ?string $note = null,
+        private ?ImageEntity $topImage = null,
+        /*
+         * @param ArticleStatusEntity[] $status
+         */
+        private ?array $status = null,
+    ) {
+    }
 
     public function jsonSerialize(): array
     {
         return [
             'article_id' => $this->articleId,
             'title' => $this->title,
-            'author' => $this->author,
-            'author_id' => $this->authorId,
-            'view_count' => $this->viewCount,
+            'note' => $this->note,
             'top_image' => $this->topImage ? $this->topImage->jsonSerialize() : null,
+            'status' => $this->status ? array_map(fn($s) => $s->jsonSerialize(), $this->status) : null,
         ];
     }
 
-    public function getArticleId(): ?int
+    public function getArticleId(): ?string
     {
         return $this->articleId;
     }
-    public function setArticleId(?int $articleId): void
+    public function setArticleId(?string $articleId): void
     {
         $this->articleId = $articleId;
     }
@@ -45,37 +47,29 @@ class ArticleDetailEntity implements JsonSerializable
     {
         $this->title = $title;
     }
-    public function getAuthor(): ?string
+    public function getNote(): ?string
     {
-        return $this->author;
+        return $this->note;
     }
-    public function setAuthor(?string $author): void
+    public function setNote(?string $note): void
     {
-        $this->author = $author;
+        $this->note = $note;
     }
-    public function getAuthorId(): ?int
-    {
-        return $this->authorId;
-    }
-    public function setAuthorId(?int $authorId): void
-    {
-        $this->authorId = $authorId;
-    }
-    public function getTopImage(): ?ImageUrlEntity
+    public function getTopImage(): ?ImageEntity
     {
         return $this->topImage;
     }
-    public function setTopImage(?ImageUrlEntity $topImage): void
+    public function setTopImage(?ImageEntity $topImage): void
     {
         $this->topImage = $topImage;
     }
-    public function getViewCount(): ?ArticleStatusEntity
+    public function getStatus(): ?array
     {
-        return $this->viewCount;
+        return $this->status;
     }
-    public function setViewCount(?ArticleStatusEntity $viewCount): void
+    public function setStatus(?array $status): void
     {
-        $this->viewCount = $viewCount;
+        $this->status = $status;
     }
-    
+
 }

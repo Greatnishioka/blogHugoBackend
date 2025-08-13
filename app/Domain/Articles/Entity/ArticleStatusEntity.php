@@ -7,8 +7,8 @@ use JsonSerializable;
 class ArticleStatusEntity implements JsonSerializable
 {
     public function __construct(
-        private ?string $articleId = null,
-        private ?string $statusId = null,
+        private ?int $articleId = null,
+        private ?int $statusId = null,
         private ?bool $statusValue = null
 
     ) {
@@ -22,19 +22,19 @@ class ArticleStatusEntity implements JsonSerializable
             'status_value' => $this->statusValue,
         ];
     }
-    public function getArticleId(): ?string
+    public function getArticleId(): ?int
     {
         return $this->articleId;
     }
-    public function setArticleId(?string $articleId): void
+    public function setArticleId(?int $articleId): void
     {
         $this->articleId = $articleId;
     }
-    public function getStatusId(): ?string
+    public function getStatusId(): ?int
     {
         return $this->statusId;
     }
-    public function setStatusId(?string $statusId): void
+    public function setStatusId(?int $statusId): void
     {
         $this->statusId = $statusId;
     }

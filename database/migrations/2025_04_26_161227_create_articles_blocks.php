@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -20,12 +19,23 @@ return new class extends Migration
             $table->enum(
                 'block_type',
                 [
-                    'heading1', 'heading2', 'heading3', 'heading4', 'heading5','heading6'
-                    ])->comment('このブロックの種類。多分種類増える');
-            $table->text('content')->nullable()->comment('このブロックのコンテンツ。imgタグなど限定的な場合にのみこのcontentが空になる。');
+                    'heading1',
+                    'heading2',
+                    'heading3',
+                    'heading4',
+                    'heading5',
+                    'heading6',
+                    'paragraph',
+                    'image',
+                    'ul',
+                    'list',
+                    'link',
+                    'code',
+                    'img',
+                ]
+            )->comment('このブロックの種類。多分種類増える');
+            $table->text('content')->nullable()->comment('このブロックのコンテンツ。');
             $table->text('style')->nullable()->comment('基本空欄にしたい。もし手動でスタイルをいじる場合は、ここにCSSを入れる。');
-            $table->string('url')->nullable()->comment('このブロックの中で使うURL。画像や動画、遷移先などのURL');
-            $table->string('language')->nullable()->comment('このブロックの記述言語。HTMLの場合は空欄');
             $table->timestamps();
         });
     }

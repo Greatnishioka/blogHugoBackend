@@ -1,16 +1,21 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\User;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class UserAuth extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
+
+    protected $table = 'users_auth';
+    protected $primaryKey = 'id';
+    public $incrementing = true;
+    protected $keyType = 'int';
 
     /**
      * The attributes that are mass assignable.
@@ -18,9 +23,10 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'user_id',
         'email',
         'password',
+        'email_verified_at'
     ];
 
     /**

@@ -4,10 +4,11 @@ namespace App\Domain\Articles\Entity\Images;
 
 use JsonSerializable;
 
-class ImageUrlEntity implements JsonSerializable
+class ImageEntity implements JsonSerializable
 {
     public function __construct(
-        private ?string $owner = null,
+        private ?int $id = null,
+        private ?string $blockUuid = null,
         private ?string $imageUrl = null,
         private ?string $imageName = null,
         private ?string $altText = null,
@@ -16,19 +17,28 @@ class ImageUrlEntity implements JsonSerializable
     public function jsonSerialize(): array
     {
         return [
-            'owner' => $this->owner,
+            'id' => $this->id,
+            'block_uuid' => $this->blockUuid,
             'image_url' => $this->imageUrl,
             'image_name' => $this->imageName,
             'alt_text' => $this->altText,
         ];
     }
-    public function getOwner(): ?string
+    public function getId(): ?int
     {
-        return $this->owner;
+        return $this->id;
     }
-    public function setOwner(?string $owner): void
+    public function setId(?int $id): void
     {
-        $this->owner = $owner;
+        $this->id = $id;
+    }
+    public function getBlockUuid(): ?string
+    {
+        return $this->blockUuid;
+    }
+    public function setBlockUuid(?string $blockUuid): void
+    {
+        $this->blockUuid = $blockUuid;
     }
     public function getImageUrl(): ?string
     {

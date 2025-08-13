@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Domain\Articles;
+namespace App\Domain\Users;
 
 use Illuminate\Support\ServiceProvider;
 
-class ArticlesErrorProvider extends ServiceProvider
+class UsersProvider extends ServiceProvider
 {
     /**
      * Register services.
@@ -12,8 +12,8 @@ class ArticlesErrorProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(
-            \App\Domain\Articles\Repository\ArticlesRepository::class,
-            \App\Domain\Articles\Infrastructure\DbArticlesInfrastructure::class,
+            \App\Domain\Users\Repository\UsersRepository::class,
+            \App\Domain\Users\Infrastructure\DbUsersInfrastructure::class,
         );
     }
 

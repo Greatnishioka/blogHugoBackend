@@ -12,7 +12,6 @@ return new class extends Migration {
     {
         Schema::create('articles', function (Blueprint $table) {
             $table->id();
-            $table->string('article_uuid')->nullable()->comment('記事のUUID');
             $table->timestamps();
         });
     }

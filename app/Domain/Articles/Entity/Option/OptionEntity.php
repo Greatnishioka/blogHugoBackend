@@ -1,62 +1,48 @@
 <?php
 
-namespace App\Domain\Articles\Entity;
+namespace App\Domain\Articles\Entity\Option;
 
 use JsonSerializable;
 
 class OptionEntity implements JsonSerializable
 {
     public function __construct(
-        private ?string $owner = null,
-        private ?string $imageUrl = null,
-        private ?string $imageName = null,
-        private ?string $altText = null,
+        private ?int $id = null,
+        private ?string $optionName = null,
+        private ?string $description = null,
     ) {}
 
     public function jsonSerialize(): array
     {
         return [
-            'owner' => $this->owner,
-            'image_url' => $this->imageUrl,
-            'image_name' => $this->imageName,
-            'alt_text' => $this->altText,
+            'id' => $this->id,
+            'option_name' => $this->optionName,
+            'description' => $this->description,
         ];
     }
-    public function getOwner(): ?string
+    public function getId(): ?int
     {
-        return $this->owner;
+        return $this->id;
     }
-    public function setOwner(?string $owner): void
+    public function getOptionName(): ?string
     {
-        $this->owner = $owner;
+        return $this->optionName;
     }
-    public function getImageUrl(): ?string
+    public function getDescription(): ?string
     {
-        return $this->imageUrl;
+        return $this->description;
     }
-    public function setImageUrl(?string $imageUrl): void
+    public function setId(?int $id): void
     {
-        $this->imageUrl = $imageUrl;
+        $this->id = $id;
     }
-    public function getImageName(): ?string
+    public function setOptionName(?string $optionName): void
     {
-        return $this->imageName;
+        $this->optionName = $optionName;
     }
-    public function setImageName(?string $imageName): void
+    public function setDescription(?string $description): void
     {
-        $this->imageName = $imageName;
-    }
-    public function getAltText(): ?string
-    {
-        return $this->altText;
-    }
-    public function setAltText(?string $altText): void
-    {
-        $this->altText = $altText;
-    }
-    public function __toString(): string
-    {
-        return json_encode($this->jsonSerialize());
+        $this->description = $description;
     }
     
 }

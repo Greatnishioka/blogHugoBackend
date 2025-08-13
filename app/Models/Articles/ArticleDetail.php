@@ -15,8 +15,9 @@ class ArticleDetail extends Model
     
     protected $fillable = [
         'article_id',
+        'article_uuid',
+        'user_uuid',
         'title',
-        'author',
-        'author_id',
+        'note',
     ];
 }

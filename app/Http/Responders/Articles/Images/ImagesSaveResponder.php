@@ -10,16 +10,16 @@ class ImagesSaveResponder extends BaseApiResponder{
     public function success(array $data = [], string $message = 'Success', int $status = 200): BaseApiResource
     {
 
-        $formattedData = array_map(function ($article) {
+        // $formattedData = array_map(function ($article) {
             
-            return $article->getImages();
+        //     return $article->getImages();
 
-        }, $data);
+        // }, $data);
 
         return new BaseApiResource([
             'status' => $status,
             'message' => $message,
-            'data' => $formattedData,
+            'data' => $data,
         ]);
     }
 

@@ -8,26 +8,26 @@ class BlockEntity implements JsonSerializable
 {
     public function __construct(
         private ?int $id,
+        private ?string $blockUuid,
         private ?int $articleId,
-        private ?int $parentBlockUuid,
+        private ?string $parentBlockUuid,
         private ?string $blockType,
         private ?string $content,
         private ?string $style,
-        private ?string $url,
-        private ?string $language,
+        private ?array $etc,
     ) {}
 
     public function jsonSerialize(): array
     {
         return [
             'id' => $this->id,
+            'block_uuid' => $this->blockUuid,
             'article_id' => $this->articleId,
             'parent_block_uuid' => $this->parentBlockUuid,
             'block_type' => $this->blockType,
             'content' => $this->content,
             'style' => $this->style,
-            'url' => $this->url,
-            'language' => $this->language,
+            'etc' => $this->etc,
         ];
     }
 
@@ -47,7 +47,15 @@ class BlockEntity implements JsonSerializable
     {
         $this->articleId = $articleId;
     }
-    public function getParentBlockUuid(): ?int
+    public function getBlockUuid(): ?string
+    {
+        return $this->blockUuid;
+    }
+    public function setBlockUuid(?string $blockUuid): void
+    {
+        $this->blockUuid = $blockUuid;
+    }
+    public function getParentBlockUuid(): ?string
     {
         return $this->parentBlockUuid;
     }
@@ -79,20 +87,12 @@ class BlockEntity implements JsonSerializable
     {
         $this->style = $style;
     }
-    public function getUrl(): ?string
+    public function getEtc(): ?array
     {
-        return $this->url;
+        return $this->etc;
     }
-    public function setUrl(?string $url): void
+    public function setEtc(?array $etc): void
     {
-        $this->url = $url;
-    }
-    public function getLanguage(): ?string
-    {
-        return $this->language;
-    }
-    public function setLanguage(?string $language): void
-    {
-        $this->language = $language;
+        $this->etc = $etc;
     }
 }

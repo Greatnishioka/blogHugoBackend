@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Users\Entity\Logout;
+namespace App\Domain\Auth\Entity\Logout;
 
 use JsonSerializable;
 

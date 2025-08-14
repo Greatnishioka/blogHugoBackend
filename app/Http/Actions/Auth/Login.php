@@ -1,25 +1,25 @@
 <?php
 
-namespace App\Http\Actions\Articles\Images;
+namespace App\Http\Actions\Auth;
 
-use App\Domain\Articles\UseCase\ImagesSaveUseCase;
+use App\Domain\Auth\UseCase\LoginUseCase;
 
 use App\Exceptions\BaseException;
-use App\Http\Requests\Articles\Images\ImagesSaveRequest;
+use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\BaseApiResource;
-use App\Http\Responders\Articles\Images\ImagesSaveResponder;
+use App\Http\Responders\Auth\LoginResponder;
 
-class ImagesSave {
-    private ImagesSaveUseCase $useCase;
-    private ImagesSaveResponder $responder;
+class Login {
+    private LoginUseCase $useCase;
+    private LoginResponder $responder;
 
-    public function __construct(ImagesSaveUseCase $useCase, ImagesSaveResponder $responder)
+    public function __construct(LoginUseCase $useCase, LoginResponder $responder)
     {
         $this->useCase = $useCase;
         $this->responder = $responder;
     }
 
-    public function handle(ImagesSaveRequest $request): BaseApiResource
+    public function handle(LoginRequest $request): BaseApiResource
     {
         try {
             $entities = $this->useCase->__invoke($request);

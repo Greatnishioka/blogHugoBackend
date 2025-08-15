@@ -61,17 +61,16 @@ class DbAuthInfrastructure implements AuthRepository
             if (Auth::attempt($credentials)) {
                 session()->regenerate();
 
-                // ログインしたユーザー情報を取得
-                $user = Auth::user();
+                // user_authテーブルで認証してるので、ここで取得するのはuser_authテーブルの内容
+                $userAuth = Auth::user();
 
-                $userData = $this->user->where('id', $user->id)->firstOrFail();
+                $userData = $this->user->where('id', $userAuth->id)->firstOrFail();
 
                 return new LoginEntity(
                     id: $userData->id,
-                    userUuid: $userData->user_uuid
+                    userUuid: $userData->user_uuid,
                 );
-            }
-            else {
+            } else {
                 throw new \RuntimeException('ログインに失敗しました。', 0);
             }
 

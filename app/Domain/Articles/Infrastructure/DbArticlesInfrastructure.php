@@ -31,6 +31,7 @@ use App\Domain\Articles\Repository\ArticlesRepository;
 // DTOs
 use App\Domain\Articles\DTO\RegisterArticleDTO;
 use App\Domain\Articles\DTO\GetArticleDTO;
+use App\Domain\Articles\DTO\UpdateArticleDTO;
 // Others
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -142,27 +143,9 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
     // 未実装
     #[\Override]
-    public function updateArticles(Request $request): ArticlesEntity
+    public function updateArticles(UpdateArticleDTO $dto): ArticlesEntity
     {
-        return new ArticlesEntity(
-            $request->input('id'),
-            new ArticleDetailEntity(
-                $request->input('detail.article_uuid'),
-                $request->input('detail.title'),
-                $request->input('detail.author'),
-                $request->input('detail.author_id'),
-                $request->input('status'),
-            ),
-            new ArticleTagsEntity(
-                $request->input('id'),
-                $request->input('tags')
-            ),
-            new ArticleBlockEntity(
-                $request->input('id'),
-                $request->input('blocks')
-            ),
-            $request->input('options')
-        );
+        return new ArticlesEntity();
     }
 
     // 未実装
@@ -384,61 +367,77 @@ class DbArticlesInfrastructure implements ArticlesRepository
     public function registerBlockArticle($blocks, $id): array
     {
 
-        $savedBlocks = [];
+        try {
+            $savedBlocks = [];
 
-        foreach ($blocks as $block) {
-            $savedEtcInfo = [];
+            $baseBlocks = $blocks['baseBlocks'] ?? [];
 
-            $savedBlock = $this->articleBlocks->create([
-                'block_uuid' => $block['blockUuid'], // このuuidはフロントエンド側で生成したものを使用
-                'article_id' => $id,
-                'block_type' => $block['blockType'],
-                'content' => $block['content'],
-                // 以下は各タグごとにオプションで必要になる項目
-                'parent_block_uuid' => $block['parentBlockUuid'] ?? null,
-                'order_from_parent_block' => $block['orderFromParentBlock'] ?? null,
-                'style' => $block['blockStyle'] ?? null,
-            ]);
+            // 管理のためにキーを追加する
+            $imageBlocks = $this->addKeyBlock($blocks['images'] ?? []);
+            $linkBlocks = $this->addKeyBlock($blocks['links'] ?? []);
+            $codeBlocks = $this->addKeyBlock($blocks['code'] ?? []);
 
-            $savedBlockAttributes = $savedBlock->getAttributes();
+            foreach ($baseBlocks as $block) {
+                $etcInfo = [];
 
-            // 各ブロックのタイプに応じて、etc情報を設定
-            switch ($block['blockType']) {
-                case 'img':
+                $savedBlock = $this->articleBlocks->create([
+                    'block_uuid' => $block['blockUuid'], // このuuidはフロントエンド側で生成したものを使用
+                    'article_id' => $id,
+                    'block_type' => $block['blockType'],
+                    'content' => $block['content'],
+                    // 以下は各タグごとにオプションで必要になる項目
+                    'parent_block_uuid' => $block['parentBlockUuid'] ?? null,
+                    'order_from_parent_block' => $block['orderFromParentBlock'] ?? null,
+                    'style' => $block['blockStyle'] ?? null,
+                ]);
 
-                    // block_uuidを使用して、画像の情報を保存
-                    $savedEtcInfo = $this->registerImageBlock(
-                        $block,
-                        $savedBlockAttributes['block_uuid']
-                    );
+                $savedBlockAttributes = $savedBlock->getAttributes();
 
-                    break;
-                // case 'link':
+                // 各ブロックのタイプに応じて、etc情報を設定
+                switch ($block['blockType']) {
+                    case 'img':
 
-                //     $savedEtcInfo = $this->registerLinkBlock(
-                //         $block,
-                //         $savedBlockAttributes['block_uuid']
-                //     );
+                        // 画像ブロックの場合は別のAPIで画像の情報を取得しているので、以前登録した情報を取得するだけでいい
+                        $imageBlock = $this->findImageBlockByUuid($block['blockUuid']);
 
-                //     break;
-                // case 'code':
+                        // 画像ブロックが見つからない場合は、登録する
+                        if (!$imageBlock) {
+                            $imageBlock = $this->registerImageBlock($imageBlocks[$block['blockUuid']] ?? []);
+                        }
 
-                //     break;
+                        $etcInfo = $imageBlock ? $imageBlock->getAttributes() : null;
+
+                        break;
+                    // case 'link':
+
+                    //     $etcInfo = $this->registerLinkBlock(
+                    //         $block,
+                    //         $savedBlockAttributes['block_uuid']
+                    //     );
+
+                    //     break;
+                    // case 'code':
+
+                    //     break;
+                }
+
+                $savedBlocks[] = new BlockEntity(
+                    $savedBlockAttributes['id'],
+                    $savedBlockAttributes['block_uuid'],
+                    $savedBlockAttributes['article_id'],
+                    $savedBlockAttributes['parent_block_uuid'] ?? null,
+                    $savedBlockAttributes['block_type'],
+                    $savedBlockAttributes['content'],
+                    $savedBlockAttributes['style'] ?? null,
+                    $etcInfo
+                );
             }
 
-            $savedBlocks[] = new BlockEntity(
-                $savedBlockAttributes['id'],
-                $savedBlockAttributes['block_uuid'],
-                $savedBlockAttributes['article_id'],
-                $savedBlockAttributes['parent_block_uuid'] ?? null,
-                $savedBlockAttributes['block_type'],
-                $savedBlockAttributes['content'],
-                $savedBlockAttributes['style'] ?? null,
-                $savedEtcInfo
-            );
+            return $savedBlocks;
+        } catch (\Exception $e) {
+            throw new \RuntimeException('ブロックの登録に失敗しました。', 0, $e);
         }
 
-        return $savedBlocks;
     }
     private function registerDetailArticle($detail, $id): array
     {
@@ -521,15 +520,29 @@ class DbArticlesInfrastructure implements ArticlesRepository
         return $savedOptions;
     }
 
-    private function registerImageBlock(array $block, string $uuid): array
+    private function findImageBlockByUuid(string $blockUuid): ?BlockImage
     {
+        return $this->blockImage->where('block_uuid', $blockUuid)->first();
+    }
+
+    private function registerImageBlock(array $block): BlockImage
+    {
+
         $savedBlockImage = $this->blockImage->create([
-            'block_uuid' => $uuid,
+            'block_uuid' => $block['blockUuid'] ?? null,
             'image_name' => $block['imageName'] ?? null,
             'image_url' => $block['imageUrl'] ?? null,
             'alt_text' => $block['altText'] ?? null,
         ]);
 
-        return $savedBlockImage->toArray();
+        return $savedBlockImage;
+    }
+
+    private function addKeyBlock(array $block): array
+    {
+        return array_reduce($block, function ($result, $block) {
+            $result[$block['blockUuid']] = $block;
+            return $result;
+        }, []);
     }
 }

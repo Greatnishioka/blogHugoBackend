@@ -5,12 +5,14 @@ namespace App\Domain\Auth\Infrastructure;
 // Entities
 use App\Domain\Auth\Entity\UserAuth\UserAuthEntity;
 use App\Domain\Auth\Entity\Login\LoginEntity;
+use App\Domain\Auth\Entity\Logout\LogoutEntity;
 // Models
 use App\Models\User\User;
 use App\Models\User\UserAuth;
 // DTOs
 use App\Domain\Auth\DTO\RegisterAuthDTO;
 use App\Domain\Auth\DTO\LoginDTO;
+use App\Domain\Auth\DTO\LogoutDTO;
 // Repositories
 use App\Domain\Auth\Repository\AuthRepository;
 // Others
@@ -88,5 +90,31 @@ class DbAuthInfrastructure implements AuthRepository
         ]);
 
         return $userAuth->getAttributes();
+    }
+
+    public function logout(LogoutDTO $dto): LogoutEntity
+    {
+        try {
+            // ログアウト処理
+            Auth::guard('web')->logout();
+
+            if ($dto->invalidateSession) {
+                session()->invalidate();
+            }
+
+            if ($dto->regenerateToken) {
+                session()->regenerateToken();
+            }
+
+            return new LogoutEntity(
+                success: true,
+                message: 'ログアウトしました。'
+            );
+        } catch (\Exception $e) {
+            return new LogoutEntity(
+                success: false,
+                message: 'ログアウト処理中にエラーが発生しました。'
+            );
+        }
     }
 }

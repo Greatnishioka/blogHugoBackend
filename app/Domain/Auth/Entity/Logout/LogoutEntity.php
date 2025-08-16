@@ -7,92 +7,32 @@ use JsonSerializable;
 class LogoutEntity implements JsonSerializable
 {
     public function __construct(
-        private ?int $id,
-        private ?int $articleId,
-        private ?int $parentBlockUuid,
-        private ?string $blockType,
-        private ?string $content,
-        private ?string $style,
-        private ?string $url,
-        private ?string $language,
+        private ?bool $success,
+        private ?string $message
     ) {}
 
     public function jsonSerialize(): array
     {
         return [
-            'id' => $this->id,
-            'article_id' => $this->articleId,
-            'parent_block_uuid' => $this->parentBlockUuid,
-            'block_type' => $this->blockType,
-            'content' => $this->content,
-            'style' => $this->style,
-            'url' => $this->url,
-            'language' => $this->language,
+            'success' => $this->success,
+            'message' => $this->message,
         ];
     }
 
-    public function getId(): ?int
+    public function getSuccess(): ?bool
     {
-        return $this->id;
+        return $this->success;
     }
-    public function setId(?int $id): void
+    public function setSuccess(?bool $success): void
     {
-        $this->id = $id;
+        $this->success = $success;
     }
-    public function getArticleId(): ?int
+    public function getMessage(): ?string
     {
-        return $this->articleId;
+        return $this->message;
     }
-    public function setArticleId(?int $articleId): void
+    public function setMessage(?string $message): void
     {
-        $this->articleId = $articleId;
-    }
-    public function getParentBlockUuid(): ?int
-    {
-        return $this->parentBlockUuid;
-    }
-    public function setParentBlockId(?int $parentBlockId): void
-    {
-        $this->parentBlockId = $parentBlockId;
-    }
-    public function getBlockType(): ?string
-    {
-        return $this->blockType;
-    }
-    public function setBlockType(?string $blockType): void
-    {
-        $this->blockType = $blockType;
-    }
-    public function getContent(): ?string
-    {
-        return $this->content;
-    }
-    public function setContent(?string $content): void
-    {
-        $this->content = $content;
-    }
-    public function getStyle(): ?string
-    {
-        return $this->style;
-    }
-    public function setStyle(?string $style): void
-    {
-        $this->style = $style;
-    }
-    public function getUrl(): ?string
-    {
-        return $this->url;
-    }
-    public function setUrl(?string $url): void
-    {
-        $this->url = $url;
-    }
-    public function getLanguage(): ?string
-    {
-        return $this->language;
-    }
-    public function setLanguage(?string $language): void
-    {
-        $this->language = $language;
+        $this->message = $message;
     }
 }

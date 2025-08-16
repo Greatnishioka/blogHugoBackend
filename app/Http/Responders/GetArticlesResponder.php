@@ -13,23 +13,25 @@ class GetArticlesResponder extends BaseApiResponder{
 
         $formattedData = array_map(function ($article) {
             return [
-                'id' => $article->getId(),
-                'title' => $article->getTitle(),
-                'author' => $article->getAuthor(),
-                'authorId' => $article->getAuthorId(),
-                'viewCount' => $article->getViewCount(),
-                'blocks' => array_map(function ($block) {
-                    return [
-                        'id' => $block->getId(),
-                        'articleId' => $block->getArticleId(),
-                        'parentBlockId' => $block->getParentBlockUuid(),
-                        'blockType' => $block->getBlockType(),
-                        'content' => $block->getContent(),
-                        'style' => $block->getStyle(),
-                        'url' => $block->getUrl(),
-                        'language' => $block->getLanguage(),
-                    ];
-                }, $article->getBlocks() ?? []),
+                // かなり構造をがっつり変えたので、後ほど調整
+
+                // 'id' => $article->getId(),
+                // 'title' => $article->getTitle(),
+                // 'author' => $article->getAuthor(),
+                // 'authorId' => $article->getAuthorId(),
+                // 'viewCount' => $article->getViewCount(),
+                // 'blocks' => array_map(function ($block) {
+                //     return [
+                //         'id' => $block->getId(),
+                //         'articleId' => $block->getArticleId(),
+                //         'parentBlockId' => $block->getParentBlockUuid(),
+                //         'blockType' => $block->getBlockType(),
+                //         'content' => $block->getContent(),
+                //         'style' => $block->getStyle(),
+                //         'url' => $block->getUrl(),
+                //         'language' => $block->getLanguage(),
+                //     ];
+                // }, $article->getBlocks() ?? []),
             ];
         }, $data);
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Actions;
+namespace App\Http\Actions\Articles\Project;
 
 use App\Domain\Articles\UseCase\GetArticlesUseCase;
 
@@ -8,7 +8,6 @@ use App\Exceptions\BaseException;
 use App\Http\Requests\RegisterArticlesRequest;
 use App\Http\Resources\BaseApiResource;
 use App\Http\Responders\GetArticlesResponder;
-use RuntimeException;
 
 class GetArticles {
     private GetArticlesUseCase $useCase;
@@ -27,11 +26,11 @@ class GetArticles {
 
             return $this->responder->success(
                 data: [$entities],
-                message: '記事の登録が完了しました。'
+                message: '記事の取得が完了しました。'
             );
         } catch (BaseException $e) {
             return $this->responder->error(
-                message: '記事の登録の途中で予期せぬエラーが発生しました。',
+                message: '記事の取得の途中で予期せぬエラーが発生しました。',
                 errors: ['exception' => $e->getMessage()]
             );
         }

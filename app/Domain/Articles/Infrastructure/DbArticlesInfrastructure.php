@@ -203,8 +203,8 @@ class DbArticlesInfrastructure implements ArticlesRepository
             // ここはきちんとページの要素を組み立てる
             return new ArticlesEntity(
                 $articleAttributes['id'],
-                $articleAttributes['user_id'], // ユーザーIDは記事の作成者のID
-                $articleAttributes['article_id'],
+                null, // ユーザーIDは記事の作成者のID
+                null,
                 null,
                 null,
             );

@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->uuid('block_uuid')->comment('ブロックのUUID。これだけは外部に露出するのでUUIDを使用する。');
             $table->string('image_url')->nullable()->comment('画像のURL。');
-            $table->string('image_name')->nullable()->comment('画像の名前。');
-            $table->string('alt_text')->nullable()->comment('画像の代替テキスト。');
+            $table->string('image_name', 48)->nullable()->comment('画像の名前。');
+            $table->string('alt_text', 255)->nullable()->comment('画像の代替テキスト。');
             $table->timestamps();
         });
     }

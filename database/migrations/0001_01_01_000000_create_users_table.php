@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('user_uuid')
+            $table->uuid('user_uuid')
                 ->unique()
                 ->comment('ユーザーID。ダブりなし。Twitterみたいに自由に切り替え可能でこれを利用してログインできるようにもしたい。');
             $table->timestamps();

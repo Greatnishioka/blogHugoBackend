@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('block_image', function (Blueprint $table) {
             $table->id();
-            $table->string('block_uuid')->comment('ブロックのUUID。これだけは外部に露出するのでUUIDを使用する。');
+            $table->uuid('block_uuid')->comment('ブロックのUUID。これだけは外部に露出するのでUUIDを使用する。');
             $table->string('image_url')->nullable()->comment('画像のURL。');
             $table->string('image_name')->nullable()->comment('画像の名前。');
             $table->string('alt_text')->nullable()->comment('画像の代替テキスト。');

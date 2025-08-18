@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('options', function (Blueprint $table) {
             $table->id();
-            $table->string('option_name')->comment('オプションの名前。');
-            $table->string('description')->nullable()->comment('オプションの説明。任意で設定可能。');
+            $table->string('option_name', 48)->comment('オプションの名前。');
+            $table->string('description', 255)->nullable()->comment('オプションの説明。任意で設定可能。');
             $table->timestamps();
         });
     }

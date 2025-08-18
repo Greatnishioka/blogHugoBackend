@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('status', function (Blueprint $table) {
             $table->id();
-            $table->string('status_name')->comment('ステータス名');
-            $table->string('description')->nullable()->comment('ステータスの説明。任意で設定可能。');
+            $table->string('status_name', 48)->comment('ステータス名');
+            $table->string('description', 255)->nullable()->comment('ステータスの説明。任意で設定可能。');
             $table->timestamps();
         });
     }

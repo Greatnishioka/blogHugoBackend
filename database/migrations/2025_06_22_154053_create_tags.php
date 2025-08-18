@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('tags', function (Blueprint $table) {
             $table->id();
-            $table->string('content')->unique()->comment('タグの内容。被りを防ぐためにユニーク制約を使用。');
+            $table->string('content',48)->unique()->comment('タグの内容。被りを防ぐためにユニーク制約を使用。');
             $table->json('relatedTags')->nullable()->comment('タグの関連タグ。将来的に関連するタグを管理したいねぇ。');
             $table->timestamps();
         });

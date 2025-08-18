@@ -38,6 +38,7 @@ use Intervention\Image\Drivers\Gd\Driver;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use App\Exceptions\Images\CouldNotSaveImageException;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class DbArticlesInfrastructure implements ArticlesRepository
 {
@@ -82,60 +83,67 @@ class DbArticlesInfrastructure implements ArticlesRepository
     {
         try {
 
-            // 記事の大枠の作成
-            // ここで作成した記事のIDを元に、他の情報を紐づけていく
-            $savedArticles = $this->registerMainArticle();
+            DB::transaction(
+                function () use ($dto) {
+                    // 記事の大枠の作成
+                    // ここで作成した記事のIDを元に、他の情報を紐づけていく
+                    $savedArticles = $this->registerMainArticle();
 
-            // 記事のブロックの作成
-            $savedBlocks = $this->registerBlockArticle(
-                $dto->blocks,
-                $savedArticles['id']
+                    // 記事のブロックの作成
+                    $savedBlocks = $this->registerBlockArticle(
+                        $dto->blocks,
+                        $savedArticles['id']
+                    );
+
+                    // 記事の詳細の作成
+                    $savedDetail = $this->registerDetailArticle(
+                        $dto->detail,
+                        $savedArticles['id']
+                    );
+
+                    // 記事のステータスの作成
+                    $savedStatus = $this->registerStatusArticle(
+                        $dto->status,
+                        $savedArticles['id']
+                    );
+
+                    // 記事のタグの作成
+                    $savedTags = $this->registerTagsArticle(
+                        $dto->tags,
+                        $savedArticles['id']
+                    );
+
+                    // 記事のオプションの作成(公開・非公開など)
+                    $savedOptions = $this->registerOptions(
+                        $dto->options,
+                        $savedArticles['id']
+                    );
+
+                    return new ArticlesEntity(
+                        $savedArticles['id'],
+                        new ArticleDetailEntity(
+                            $savedDetail['article_uuid'],
+                            $savedDetail['title'],
+                            $savedDetail['note'],
+                            null,
+                            $savedStatus
+                        ),
+                        new ArticleTagsEntity(
+                            $savedArticles['id'],
+                            $savedTags
+                        ),
+                        new ArticleBlockEntity(
+                            $savedArticles['id'],
+                            $savedBlocks
+
+                        ),
+                        $savedOptions,
+                    );
+                }
             );
 
-            // 記事の詳細の作成
-            $savedDetail = $this->registerDetailArticle(
-                $dto->detail,
-                $savedArticles['id']
-            );
+            return new ArticlesEntity();
 
-            // 記事のステータスの作成
-            $savedStatus = $this->registerStatusArticle(
-                $dto->status,
-                $savedArticles['id']
-            );
-
-            // 記事のタグの作成
-            $savedTags = $this->registerTagsArticle(
-                $dto->tags,
-                $savedArticles['id']
-            );
-
-            // 記事のオプションの作成(公開・非公開など)
-            $savedOptions = $this->registerOptions(
-                $dto->options,
-                $savedArticles['id']
-            );
-
-            return new ArticlesEntity(
-                $savedArticles['id'],
-                new ArticleDetailEntity(
-                    $savedDetail['article_uuid'],
-                    $savedDetail['title'],
-                    $savedDetail['note'],
-                    null,
-                    $savedStatus
-                ),
-                new ArticleTagsEntity(
-                    $savedArticles['id'],
-                    $savedTags
-                ),
-                new ArticleBlockEntity(
-                    $savedArticles['id'],
-                    $savedBlocks
-
-                ),
-                $savedOptions,
-            );
         } catch (NotFoundHttpException $e) {
             throw new NotFoundHttpException($e->getMessage());
         }
@@ -145,6 +153,35 @@ class DbArticlesInfrastructure implements ArticlesRepository
     #[\Override]
     public function updateArticles(UpdateArticleDTO $dto): ArticlesEntity
     {
+        DB::transaction(
+            function () use ($dto) {
+
+                $articleUuid = $dto->articleUuid;
+
+                if (!empty($dto->detail)) {
+
+                }
+
+                if (!empty($dto->status)) {
+
+                }
+
+                if (!empty($dto->options)) {
+
+                }
+
+                if (!empty($dto->tags)) {
+
+                }
+
+                if (!empty($dto->blocks)) {
+
+                }
+
+                return new ArticlesEntity();
+            }
+        );
+
         return new ArticlesEntity();
     }
 
@@ -198,6 +235,8 @@ class DbArticlesInfrastructure implements ArticlesRepository
         }
     }
 
+    // 実装修正したいかも
+    // DBに保存後にそのままURLを返すのではなく、スラッグを返して、そのスラッグをもとに後で記事情報と紐づける形にしたいかも
     #[\Override]
     public function imageSave(Request $request): array
     {
@@ -208,7 +247,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
             // このpre_id付きのディレクトリは、画像の保存先を一時的に指定するためのもの
             // これが残ってる場合はバッチで削除するようにしたいね
-            $preNewDirectoryName = now()->format('Ymd-His') . '_pre-id-' . Str::uuid();
+            $preNewDirectoryName = 'pre-' . now()->format('Ymd-His') . '-' . Str::uuid();
             $newDirectory = public_path('articles/' . $preNewDirectoryName);
             $saveDestinationList = [];
             $host = request()->getSchemeAndHttpHost();
@@ -356,7 +395,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
     // 以下は便利に使えるメソッド
 
-    public function registerMainArticle(): array
+    private function registerMainArticle(): array
     {
         // 記事の登録
         $savedArticles = $this->article->create();
@@ -364,7 +403,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
         return $savedArticles->getAttributes();
     }
 
-    public function registerBlockArticle($blocks, $id): array
+    private function registerBlockArticle($blocks, $id): array
     {
 
         try {
@@ -544,5 +583,59 @@ class DbArticlesInfrastructure implements ArticlesRepository
             $result[$block['blockUuid']] = $block;
             return $result;
         }, []);
+    }
+
+    private function getArticleProjectByArticleUuid(string $articleUuid): array
+    {
+        try {
+
+            $articleDetail = $this->articleDetail->where('article_uuid', $articleUuid)->first();
+
+            if (!$articleDetail) {
+                throw new NotFoundHttpException('記事の詳細情報が見つかりません。');
+            }
+
+            $article = $this->article->where('id', $articleDetail->article_id)->first();
+
+            if (!$article) {
+                throw new NotFoundHttpException('記事が見つかりません。');
+            }
+
+            $articleStatus = $this->articleStatus->where('article_id', $article->id)->get();
+
+            if (!$articleStatus) {
+                throw new NotFoundHttpException('記事のステータスが見つかりません。');
+            }
+
+            $articleTags = $this->articleTag->where('article_id', $article->id)->get();
+
+            if (!$articleTags) {
+                throw new NotFoundHttpException('記事のタグが見つかりません。');
+            }
+
+            $articleOptions = $this->articleOption->where('article_id', $article->id)->get();
+
+            if (!$articleOptions) {
+                throw new NotFoundHttpException('記事のオプションが見つかりません。');
+            }
+
+            $articleBlocks = $this->articleBlocks->where('article_id', $article->id)->get();
+
+            if (!$articleBlocks) {
+                throw new NotFoundHttpException('記事のブロックが見つかりません。');
+            }
+
+            return [
+                'articleDetail' => $articleDetail->toArray(),
+                'article' => $article->toArray(),
+                'articleStatus' => $articleStatus->toArray(),
+                'articleTags' => $articleTags->toArray(),
+                'articleOptions' => $articleOptions->toArray(),
+                'articleBlocks' => $articleBlocks->toArray(),
+            ];
+
+        } catch (\Exception $e) {
+            throw new NotFoundHttpException('記事が見つかりません。');
+        }
     }
 }

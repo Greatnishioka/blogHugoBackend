@@ -12,6 +12,7 @@ return new class extends Migration {
     {
         Schema::create('articles', function (Blueprint $table) {
             $table->id();
+            $table->uuid('article_uuid')->unique();
             $table->timestamps();
         });
     }

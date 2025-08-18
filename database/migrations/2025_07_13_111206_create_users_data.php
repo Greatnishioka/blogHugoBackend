@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade')->comment('記事の作成者のユーザーID。usersテーブルの外部キー。');
             $table->string('name')->comment('ユーザーの名前。');
             $table->string('icon_url')->nullable()->comment('ユーザーのアイコンURL。');
-            $table->string('bio')->comment('ユーザーの自己紹介。');
+            $table->text('bio')->comment('ユーザーの自己紹介。');
             $table->enum('occupation', ['student', 'engineer', 'designer', 'manager', 'other'])->default('other')->comment('職業。');
             $table->timestamps();
         });

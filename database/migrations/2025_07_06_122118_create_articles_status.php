@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('article_id')->constrained('articles')->onDelete('cascade')->comment('記事のID。articlesテーブルの外部キー。');
             $table->foreignId('status_id')->constrained('status')->onDelete('cascade')->comment('ステータスのID。statusテーブルの外部キー。');
-            $table->unsignedBigInteger('status_value')->default(0)->comment('ステータスの値。初期値は0。');
+            $table->unsignedTinyInteger('status_value')->default(0)->comment('ステータスの値。初期値は0。');
             $table->timestamps();
         });
     }

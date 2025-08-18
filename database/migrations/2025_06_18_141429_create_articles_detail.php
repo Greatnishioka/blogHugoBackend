@@ -13,10 +13,9 @@ return new class extends Migration {
         Schema::create('articles_detail', function (Blueprint $table) {
             $table->id();
             $table->foreignId('article_id')->constrained('articles')->onDelete('cascade')->comment('記事のID。articlesテーブルの外部キー。');
-            $table->string('article_uuid')->nullable()->comment('記事のUUID');
-            $table->string('user_uuid')->comment('記事の作成者のユーザーID。usersテーブルの外部キー。');
-            $table->foreign('user_uuid')->references('user_uuid')->on('users')->onDelete('cascade')->comment('記事の作成者のユーザーID。usersテーブルの外部キー。外部に露出するためにUUIDを使用。');
+            $table->foreignUuid('user_uuid')->references('user_uuid')->on('users')->onDelete('cascade')->comment('記事の作成者のユーザーID。usersテーブルの外部キー。');
             $table->string('title')->comment('記事のタイトル。');
+            $table->text('description')->comment('記事の説明。');
             $table->string('note')->nullable()->comment('記事のメモ。');
             $table->timestamps();
         });

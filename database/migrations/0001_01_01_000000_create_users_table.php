@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->uuid('user_uuid')
                 ->unique()
+                // 自由に切り替え可能だとuuidは適していないのでは、、、(自問)
                 ->comment('ユーザーID。ダブりなし。Twitterみたいに自由に切り替え可能でこれを利用してログインできるようにもしたい。');
             $table->timestamps();
         });

@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('user_status', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade')->comment('記事のID。articlesテーブルの外部キー。');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade')->comment('ユーザーのID。usersテーブルの外部キー。');
             $table->foreignId('status_id')->constrained('status')->onDelete('cascade')->comment('ステータスのID。statusテーブルの外部キー。');
             $table->unsignedInteger('status_value')->default(0)->comment('ステータスの値。初期値は0。');
             $table->timestamps();

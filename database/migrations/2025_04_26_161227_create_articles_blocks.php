@@ -14,29 +14,15 @@ return new class extends Migration {
             $table->id();
             $table->uuid('block_uuid')->unique()->comment('このブロックのUUID。ブロックのidを露出させたくないため、こちらを使用する。');
             $table->foreignId('article_id')->constrained('articles')->onDelete('cascade');
-            $table->foreignUuid('parent_block_uuid')->nullable()->references('block_uuid')->on('articles_blocks')->onDelete('cascade')->comment('親ブロックのUUID。ulタグやaタグなどの構造化が避けられないタグに対して用いる。特に親要素がない場合はnull');
             $table->unsignedTinyInteger('order_from_parent_block')->nullable()->default(null)->comment('このブロックの順番。nullは未設定。');
-            $table->enum(
-                'block_type',
-                [
-                    'heading1',
-                    'heading2',
-                    'heading3',
-                    'heading4',
-                    'heading5',
-                    'heading6',
-                    'paragraph',
-                    'image',
-                    'ul',
-                    'list',
-                    'link',
-                    'code',
-                    'img',
-                ]
-            )->comment('このブロックの種類。多分種類増える');
+            $table->foreignId('block_type_id')->constrained('block_types')->onDelete('cascade')->comment('ブロックのタイプ。block_typesテーブルの外部キー。');
             $table->text('content')->nullable()->comment('このブロックのコンテンツ。');
             $table->text('style')->nullable()->comment('基本空欄にしたい。もし手動でスタイルをいじる場合は、ここにCSSを入れる。');
             $table->timestamps();
+        });
+
+        Schema::table('articles_blocks', function (Blueprint $table) {
+            $table->foreignUuid('parent_block_uuid')->nullable()->references('block_uuid')->on('articles_blocks')->onDelete('cascade')->comment('親ブロックのUUID。ulタグやaタグなどの構造化が避けられないタグに対して用いる。特に親要素がない場合はnull');
         });
     }
 

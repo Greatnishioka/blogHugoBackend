@@ -19,6 +19,6 @@ class UserData extends Model
         'name',
         'icon_url',
         'bio',
-        'occupation',
+        'occupation_id',
     ];
 }

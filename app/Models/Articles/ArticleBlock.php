@@ -17,7 +17,8 @@ class ArticleBlock extends Model
         'block_uuid',
         'article_id',
         'parent_block_uuid',
-        'block_type',
+        'order_from_parent_block',
+        'block_type_id',
         'content',
         'style'
     ];

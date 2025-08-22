@@ -12,7 +12,7 @@ use App\Models\Articles\ArticleTag;
 use App\Models\Articles\Blocks\BlockImage;
 use App\Models\Status\Status;
 use App\Models\Options\Option;
-use App\Models\Images\Image;
+use App\Models\Articles\Blocks\BlockTypes;
 use App\Models\Tags\Tag;
 // Entities
 use App\Domain\Articles\Entity\ArticlesEntity;
@@ -52,6 +52,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
     private Tag $tag;
     private Status $status;
     private Option $option;
+    private BlockTypes $blockTypes;
 
     public function __construct(
         Article $article,
@@ -63,7 +64,8 @@ class DbArticlesInfrastructure implements ArticlesRepository
         BlockImage $blockImage,
         Tag $tag,
         Status $status,
-        Option $option
+        Option $option,
+        BlockTypes $blockTypes
 
     ) {
         $this->article = $article;
@@ -76,6 +78,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
         $this->tag = $tag;
         $this->status = $status;
         $this->option = $option;
+        $this->blockTypes = $blockTypes;
     }
 
     #[\Override]
@@ -83,7 +86,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
     {
         try {
 
-            DB::transaction(
+            $result = DB::transaction(
                 function () use ($dto) {
                     // 記事の大枠の作成
                     // ここで作成した記事のIDを元に、他の情報を紐づけていく
@@ -119,10 +122,33 @@ class DbArticlesInfrastructure implements ArticlesRepository
                         $savedArticles['id']
                     );
 
+                    var_dump($savedArticles['id']);
+
+                    $buildedData = new ArticlesEntity(
+                        $savedArticles['id'],
+                        $savedArticles['article_uuid'],
+                        new ArticleDetailEntity(
+                            $savedDetail['title'],
+                            $savedDetail['note'],
+                            null,
+                            $savedStatus
+                        ),
+                        new ArticleTagsEntity(
+                            $savedArticles['id'],
+                            $savedTags
+                        ),
+                        new ArticleBlockEntity(
+                            $savedArticles['id'],
+                            $savedBlocks
+
+                        ),
+                        $savedOptions,
+                    );
+
                     return new ArticlesEntity(
                         $savedArticles['id'],
+                        $savedArticles['article_uuid'],
                         new ArticleDetailEntity(
-                            $savedDetail['article_uuid'],
                             $savedDetail['title'],
                             $savedDetail['note'],
                             null,
@@ -142,7 +168,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
                 }
             );
 
-            return new ArticlesEntity();
+            return $result;
 
         } catch (NotFoundHttpException $e) {
             throw new NotFoundHttpException($e->getMessage());
@@ -366,10 +392,10 @@ class DbArticlesInfrastructure implements ArticlesRepository
             // リクエスト内容
             return new ArticlesEntity(
                 null,
+                null,
                 new ArticleDetailEntity(
                     null,
                     null,
-                    "tester", // 将来的にはユーザーの情報を取得して表示する
                     new ImageEntity(
                         null,
                         "",
@@ -398,9 +424,24 @@ class DbArticlesInfrastructure implements ArticlesRepository
     private function registerMainArticle(): array
     {
         // 記事の登録
-        $savedArticles = $this->article->create();
+        $savedArticles = $this->article->create(
+            [
+                'article_uuid' => (string) Str::uuid()
+            ]
+        );
 
         return $savedArticles->getAttributes();
+    }
+
+    private function getBlockTypeIdByBlockType(string $blockType): int
+    {
+        $blockTypeRecord = $this->blockTypes->where('type_name', $blockType)->first();
+
+        if (!$blockTypeRecord) {
+            throw new NotFoundHttpException('ブロックタイプが見つかりません。');
+        }
+
+        return $blockTypeRecord->id;
     }
 
     private function registerBlockArticle($blocks, $id): array
@@ -416,19 +457,25 @@ class DbArticlesInfrastructure implements ArticlesRepository
             $linkBlocks = $this->addKeyBlock($blocks['links'] ?? []);
             $codeBlocks = $this->addKeyBlock($blocks['code'] ?? []);
 
+            // TODO: $block['parentBlockUuid']がnullのものから登録していくように修正したい
+            // 上の階層から登録していくようにする
             foreach ($baseBlocks as $block) {
                 $etcInfo = [];
 
                 $savedBlock = $this->articleBlocks->create([
                     'block_uuid' => $block['blockUuid'], // このuuidはフロントエンド側で生成したものを使用
                     'article_id' => $id,
-                    'block_type' => $block['blockType'],
+                    'block_type_id' => $this->getBlockTypeIdByBlockType($block['blockType']),
                     'content' => $block['content'],
                     // 以下は各タグごとにオプションで必要になる項目
-                    'parent_block_uuid' => $block['parentBlockUuid'] ?? null,
+                    'parent_block_uuid' => null,
                     'order_from_parent_block' => $block['orderFromParentBlock'] ?? null,
                     'style' => $block['blockStyle'] ?? null,
                 ]);
+
+                // 親ブロックのUUIDを設定
+                // $savedBlock->parent_block_uuid = $block['parentBlockUuid'] ?? null;
+                // $savedBlock->save();
 
                 $savedBlockAttributes = $savedBlock->getAttributes();
 
@@ -465,7 +512,7 @@ class DbArticlesInfrastructure implements ArticlesRepository
                     $savedBlockAttributes['block_uuid'],
                     $savedBlockAttributes['article_id'],
                     $savedBlockAttributes['parent_block_uuid'] ?? null,
-                    $savedBlockAttributes['block_type'],
+                    $savedBlockAttributes['block_type_id'],
                     $savedBlockAttributes['content'],
                     $savedBlockAttributes['style'] ?? null,
                     $etcInfo
@@ -474,19 +521,19 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
             return $savedBlocks;
         } catch (\Exception $e) {
-            throw new \RuntimeException('ブロックの登録に失敗しました。', 0, $e);
+            throw new \RuntimeException('ブロックの登録に失敗しました。', 0, );
         }
-
     }
     private function registerDetailArticle($detail, $id): array
     {
+        $userData = $detail['userInfo'];
 
         $savedDetail = $this->articleDetail->create([
             'article_id' => $id,
-            'user_uuid' => $detail['userUuid'],
-            'article_uuid' => (string) Str::uuid(),
+            'user_uuid' => $userData['userUuid'],
             'title' => $detail['title'],
-            'note' => $detail['note'], // これ用途どうする？
+            'description' => $detail['description'] ?? '',
+            'note' => $detail['note'] ?? '',
         ]);
 
         return $savedDetail->getAttributes();
@@ -561,20 +608,30 @@ class DbArticlesInfrastructure implements ArticlesRepository
 
     private function findImageBlockByUuid(string $blockUuid): ?BlockImage
     {
-        return $this->blockImage->where('block_uuid', $blockUuid)->first();
+        try {
+            return $this->blockImage->where('block_uuid', $blockUuid)->first();
+        } catch (\Exception $e) {
+            throw new \RuntimeException('UUIDを使用したブロックの取得に失敗しました。', 0, $e);
+        }
     }
 
     private function registerImageBlock(array $block): BlockImage
     {
 
-        $savedBlockImage = $this->blockImage->create([
-            'block_uuid' => $block['blockUuid'] ?? null,
-            'image_name' => $block['imageName'] ?? null,
-            'image_url' => $block['imageUrl'] ?? null,
-            'alt_text' => $block['altText'] ?? null,
-        ]);
+        try {
 
-        return $savedBlockImage;
+            $savedBlockImage = $this->blockImage->create([
+                'block_uuid' => $block['blockUuid'] ?? null,
+                'image_name' => $block['imageName'] ?? null,
+                'image_url' => $block['imageUrl'] ?? null,
+                'alt_text' => $block['altText'] ?? null,
+            ]);
+
+            return $savedBlockImage;
+
+        } catch (\Exception $e) {
+            throw new \RuntimeException('画像ブロックの付帯情報の登録に失敗しました。', 0, $e);
+        }
     }
 
     private function addKeyBlock(array $block): array

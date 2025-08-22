@@ -14,6 +14,6 @@ class Article extends Model
     protected $keyType = 'int';
 
     protected $fillable = [
-        'article_id',
+        'article_uuid',
     ];
 }

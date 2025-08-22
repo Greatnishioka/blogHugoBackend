@@ -9,7 +9,6 @@ use App\Domain\Articles\Entity\Images\ImageEntity;
 class ArticleDetailEntity implements JsonSerializable
 {
     public function __construct(
-        private ?string $articleId = null,
         private ?string $title = null,
         private ?string $note = null,
         private ?ImageEntity $topImage = null,
@@ -23,7 +22,6 @@ class ArticleDetailEntity implements JsonSerializable
     public function jsonSerialize(): array
     {
         return [
-            'article_id' => $this->articleId,
             'title' => $this->title,
             'note' => $this->note,
             'top_image' => $this->topImage ? $this->topImage->jsonSerialize() : null,
@@ -31,14 +29,6 @@ class ArticleDetailEntity implements JsonSerializable
         ];
     }
 
-    public function getArticleId(): ?string
-    {
-        return $this->articleId;
-    }
-    public function setArticleId(?string $articleId): void
-    {
-        $this->articleId = $articleId;
-    }
     public function getTitle(): ?string
     {
         return $this->title;

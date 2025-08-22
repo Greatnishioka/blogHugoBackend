@@ -7,6 +7,7 @@ use App\Models\User\User;
 use App\Models\User\UserData;
 use App\Models\User\UserOption;
 use App\Models\User\UserStatus;
+use App\Models\User\Occupations\Occupations;
 
 use App\Models\Options\Option;
 use App\Models\Status\Status;
@@ -33,6 +34,7 @@ class DbUsersInfrastructure implements UsersRepository
     private Option $option;
     private Status $status;
     private UserAuth $userAuth;
+    private Occupations $occupation;
 
     public function __construct(
         User $user,
@@ -41,7 +43,8 @@ class DbUsersInfrastructure implements UsersRepository
         UserStatus $userStatus,
         Option $option,
         Status $status,
-        UserAuth $userAuth
+        UserAuth $userAuth,
+        Occupations $occupation
     ) {
         $this->user = $user;
         $this->userData = $userData;
@@ -50,6 +53,7 @@ class DbUsersInfrastructure implements UsersRepository
         $this->option = $option;
         $this->status = $status;
         $this->userAuth = $userAuth;
+        $this->occupation = $occupation;
     }
 
     #[\Override]
@@ -63,9 +67,9 @@ class DbUsersInfrastructure implements UsersRepository
     {
 
         return DB::transaction(function () use ($dto) {
- 
+
             $userAuthDTO = $dto->userAuth;
-            
+
             // e-mailはダブリなし
             if ($this->userAuth->where(column: 'email', operator: $userAuthDTO['email'])->exists()) {
                 throw new \RuntimeException('Email already exists.');
@@ -85,7 +89,7 @@ class DbUsersInfrastructure implements UsersRepository
                     $userData['name'],
                     $userData['icon_url'],
                     $userData['bio'],
-                    $userData['occupation'],
+                    $userData['occupation_id'],
                 ),
                 $userOption,
                 $userStatus
@@ -104,15 +108,33 @@ class DbUsersInfrastructure implements UsersRepository
 
     private function registerUserData(array $data, int $id): array
     {
-        $userData = $this->userData->create([
-            'user_id' => $id,
-            'name' => $data['name'] ?? null,
-            'icon_url' => $data['icon_url'] ?? null,
-            'bio' => $data['bio'] ?? null,
-            'occupation' => $data['occupation'] ?? null,
-        ]);
+        try {
 
-        return $userData->getAttributes();
+            $occupationId = $this->findOccupationId($data['occupation']);
+
+            if (!$occupationId) {
+                throw new \RuntimeException('Invalid occupation.');
+            }
+
+            $userData = $this->userData->create([
+                'user_id' => $id,
+                'name' => $data['name'] ?? null,
+                'icon_url' => $data['icon_url'] ?? null,
+                'bio' => $data['bio'] ?? null,
+                'occupation_id' => $occupationId,
+            ]);
+
+            return $userData->getAttributes();
+
+        } catch (\Exception $e) {
+            throw new \RuntimeException('Error registering user data: ' . $e->getMessage());
+        }
+    }
+
+    private function findOccupationId(string $occupationName): ?int
+    {
+        $occupation = $this->occupation->where('occupation_name', $occupationName)->first();
+        return $occupation ? $occupation->id : null;
     }
 
     private function registerUserOption(int $id): array

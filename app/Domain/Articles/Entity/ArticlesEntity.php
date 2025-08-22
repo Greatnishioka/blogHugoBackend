@@ -8,6 +8,7 @@ class ArticlesEntity implements JsonSerializable
 {
     public function __construct(
         private ?int $id = null,
+        private ?string $articleUuid = null,
         private ?ArticleDetailEntity $detail = null,
         private ?ArticleTagsEntity $tags = null,
         private ?ArticleBlockEntity $blocks = null,
@@ -18,6 +19,7 @@ class ArticlesEntity implements JsonSerializable
     {
         return [
             'id' => $this->id,
+            'article_uuid' => $this->articleUuid,
             'detail' => $this->detail ? $this->detail->jsonSerialize() : null,
             'tags' => $this->tags ? $this->tags->jsonSerialize() : null,
             'blocks' => $this->blocks ? $this->blocks->jsonSerialize() : null,
@@ -32,6 +34,14 @@ class ArticlesEntity implements JsonSerializable
     public function setId(?int $id): void
     {
         $this->id = $id;
+    }
+    public function getArticleUuid(): ?string
+    {
+        return $this->articleUuid;
+    }
+    public function setArticleUuid(?string $articleUuid): void
+    {
+        $this->articleUuid = $articleUuid;
     }
     public function setViewCount(?int $viewCount): void
     {

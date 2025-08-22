@@ -1,23 +1,23 @@
 <?php
-namespace App\Models\Articles;
+
+namespace App\Models\User\Occupations;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ArticleDetail extends Model
+class Occupations extends Model
 {
     use HasFactory;
 
-    protected $table = 'articles_detail';
+    protected $table = 'occupations';
     protected $primaryKey = 'id';
     public $incrementing = true;
     protected $keyType = 'int';
-    
+
     protected $fillable = [
-        'article_id',
-        'user_uuid',
-        'title',
+        'occupation_name',
+        'occupation_name_ja',
         'description',
-        'note',
+        'is_available',
     ];
 }

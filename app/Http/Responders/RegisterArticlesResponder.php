@@ -13,6 +13,7 @@ class RegisterArticlesResponder extends BaseApiResponder
     {
 
         $data = $data[0];
+    
         $detail = $data->getDetail();
         $options = $data->getOptions();
         $tags = $data->getTags();
@@ -27,7 +28,7 @@ class RegisterArticlesResponder extends BaseApiResponder
             'status' => $status,
             'message' => $message,
             'data' => [
-                'articleId' => $detail->getArticleId(),
+                'articleId' => $data->getArticleUuid(),
                 'detail' => [
                     'title' => $detail->getTitle(),
                     'note' => $detail->getNote(),

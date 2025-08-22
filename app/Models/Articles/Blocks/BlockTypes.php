@@ -1,23 +1,21 @@
 <?php
-namespace App\Models\Articles;
+namespace App\Models\Articles\Blocks;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ArticleDetail extends Model
+class BlockTypes extends Model
 {
     use HasFactory;
 
-    protected $table = 'articles_detail';
+    protected $table = 'block_types';
     protected $primaryKey = 'id';
     public $incrementing = true;
     protected $keyType = 'int';
-    
+
     protected $fillable = [
-        'article_id',
-        'user_uuid',
-        'title',
+        'type_name',
         'description',
-        'note',
+        'is_available'
     ];
 }

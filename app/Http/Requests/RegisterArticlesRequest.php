@@ -30,8 +30,9 @@ class RegisterArticlesRequest extends BaseApiRequest
             'blocks.images.*.imageName' => 'required|string',
             'blocks.images.*.altText' => 'required|string',
 
-            'detail.userUuid' => 'required|uuid',
+            'detail.userInfo.userUuid' => 'required|uuid',
             'detail.title' => 'required|string|max:255',
+            'detail.description' => 'required|string|max:1000',
             'detail.note' => 'nullable|string',
 
             'status' => 'required|array',

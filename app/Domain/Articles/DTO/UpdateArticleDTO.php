@@ -1,20 +1,28 @@
 <?php
 namespace App\Domain\Articles\DTO;
 
+use App\Domain\Common\ValueObject\Uuid;
+
 class UpdateArticleDTO
 {
-    public string $articleUuid;
-    public array $blocks;
+    public Uuid $articleUuid;
     public array $detail;
+    public array $blocks;
     public array $status;
     public array $tags;
     public array $options;
 
-    public function __construct(string $articleUuid, array $blocks, array $detail, array $status, array $tags, array $options)
-    {
-        $this->articleUuid = $articleUuid;
-        $this->blocks = $blocks;
+    public function __construct(
+        string $articleUuid,
+        array $detail,
+        array $blocks,
+        array $status,
+        array $tags,
+        array $options
+    ) {
+        $this->articleUuid = Uuid::fromString($articleUuid);
         $this->detail = $detail;
+        $this->blocks = $blocks;
         $this->status = $status;
         $this->tags = $tags;
         $this->options = $options;

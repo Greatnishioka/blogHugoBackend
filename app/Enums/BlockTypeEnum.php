@@ -7,6 +7,7 @@ enum BlockTypeEnum: string
     case IMAGE = 'img';
     case LINK = 'link';
     case CODE = 'code';
+    case PARAGRAPH = 'paragraph';
 
     public static function getValues(): array
     {

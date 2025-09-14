@@ -9,8 +9,13 @@ class RegisterArticleDTO
     public array $tags;
     public array $options;
 
-    public function __construct(array $blocks, array $detail, array $status, array $tags, array $options)
-    {
+    public function __construct(
+        array $blocks,
+        array $detail,
+        array $status,
+        array $tags,
+        array $options
+    ) {
         $this->blocks = $blocks;
         $this->detail = $detail;
         $this->status = $status;

@@ -1,22 +1,24 @@
 <?php
 namespace App\Domain\Articles\DTO;
 
+use App\Domain\Common\ValueObject\Uuid;
+
 class GetArticleDTO
 {
-    public string $userId; // フロントエンドではuuidをユーザーIDとして使用している
-    public int $perPage;
+    public string $userName;
+    public Uuid $articleId;
 
-    public function __construct(string $userId, int $perPage)
+    public function __construct(string $userName, string $articleId)
     {
-        $this->userId = $userId;
-        $this->perPage = $perPage;
+        $this->userName = $userName;
+        $this->articleId = Uuid::fromString($articleId);
     }
 
     public static function fromRequest($request): self
     {
         return new self(
-            $request->query('userId'),
-            $request->query('perPage', 10)
+            $request->query('userName'),
+            $request->query('articleId')
         );
     }
 }
